@@ -20,19 +20,25 @@ import com.badlogic.gdx.utils.ScreenUtils;
 
 public class DibujadoSeleccion extends DibujadoGeneral {
     public class Animacion{
-    		private final int MAX_FRAMES_MOV = 60;
+    		private final int MAX_FRAMES_MOV = 40;
     		private float framesMov;
+    		private Sprite sprFondoAnt;
+    		private CancionesCargadas canciones;
     		
-    		public Animacion() {
+    		public Animacion(CancionesCargadas c) {
     			framesMov = 0;
+    			sprFondoAnt = null;
+    			canciones = c;
     		}
     		
     		public void animar() {
-    			framesMov /= 1.125f;
+    			framesMov /= 1.125f;		//Mover
     			
+    			//Detener animación
     			if (framesMov >= -1 && framesMov < 0 ||
     				framesMov > 0 && framesMov <= 1) {
     				framesMov = 0;
+    				sprFondoAnt = null;
     			}
     		}
     		
@@ -42,10 +48,36 @@ public class DibujadoSeleccion extends DibujadoGeneral {
     		
     		public void animDeslizarDer() {
 			framesMov += MAX_FRAMES_MOV;
+			ajusteSprite();
     		}
     		
     		public void animDeslizarIzq() {
 			framesMov -= MAX_FRAMES_MOV;
+			ajusteSprite();
+    		}
+    		
+    		public Sprite getSprAnt() {
+    			return sprFondoAnt;
+    		}
+    		
+    		private void ajusteSprite() {
+    			Texture origen = txtPortadas[canciones.getIndiceCancion()];
+			sprFondoAnt = new Sprite(origen);
+    			
+    			//Configurar imagen de fondo
+    			//La imagen tiene un ratio menor o igual a 16:9
+    			if (origen.getWidth() / origen.getHeight() <= Coord.RATIO) {
+    				sprFondoAnt.setScale((float)Coord.RESOL_X / origen.getWidth());
+    			}
+    			//La imagen tiene un ratio mayor a 16:9
+    			else {
+    				sprFondoAnt.setScale((float)Coord.RESOL_Y / origen.getHeight());
+    			}
+    			//Centrar
+    			sprFondoAnt.setPosition(
+    			(Coord.RESOL_X - sprFondo.getWidth()) / 2, 
+    			(Coord.RESOL_Y - sprFondo.getHeight()) / 2
+    			);
     		}
     };
     
@@ -66,7 +98,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
     		this.canciones = canciones;
     		txtPortadas = new Texture[canciones.size()];
     		sprPortadas = new Sprite[canciones.size()];
-    		anim = new Animacion();
+    		anim = new Animacion(canciones);
     		cargar(dib);
     }
 
@@ -192,6 +224,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 		int indice = canciones.getIndiceCancion();
 		float animacion = 350 * anim.relacionAnim();
 		float animBrincos;
+		float relacionAnimAj = Math.abs(anim.relacionAnim()) > 1 ? 1 : Math.abs(anim.relacionAnim());
 		
         ScreenUtils.clear(.10f, .09f, .11f, 1);
         frames = Gdx.graphics.getFrameId();
@@ -202,7 +235,19 @@ public class DibujadoSeleccion extends DibujadoGeneral {
         
         /*------ Dibujado Fondo -----*/
         dibujadoPantalla.begin();
-        
+
+        if (anim.getSprAnt() != null) {
+        		float anima = anim.relacionAnim() > 0 ? -1.0f: 1.0f;
+    			anim.getSprAnt().setPosition(
+    				(Coord.RESOL_X - anim.getSprAnt().getWidth()) / 2 + Coord.RESOL_X * (anima + anim.relacionAnim()), 
+    				(Coord.RESOL_Y - anim.getSprAnt().getHeight()) / 2
+    			);
+            anim.getSprAnt().draw(dibujadoPantalla);
+        }
+        sprFondo.setPosition(
+        		(Coord.RESOL_X - sprFondo.getWidth()) / 2 + Coord.RESOL_X * (anim.relacionAnim()), 
+        		(Coord.RESOL_Y - sprFondo.getHeight()) / 2
+        	);
         sprFondo.draw(dibujadoPantalla);
         
         dibujadoPantalla.end();
@@ -236,6 +281,8 @@ public class DibujadoSeleccion extends DibujadoGeneral {
         dibujadoPantalla.end();
         for (int i = 0, j = canciones.getIndiceCancion() - MAX_PORTADAS / 2; i < MAX_PORTADAS; i++, j++) {
         		if (j >= canciones.size() || j < 0) continue;  
+        		int posBarraX = (i - MAX_PORTADAS / 2) * 350;
+        		float posTextY = 0;
         		
         		//Dibujar fondo canción
         		//Activa el shader del fondo con los triangulitos
@@ -258,6 +305,17 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 
             //Texto de sombra
         		dibujadoPantalla.begin();
+        		
+        		if (j == indice) {
+        			posTextY = 75 - 75 * relacionAnimAj;
+        		}
+        		if (animacion > 0 && j == indice - 1) {
+        			posTextY = 75 * relacionAnimAj;
+        		}
+        		else if (animacion < 0 && j == indice + 1) {
+        			posTextY = 75 * relacionAnimAj;
+        		}
+        		
         		for (int k = 0; k < 4; k++) {
             		renderTexto.setText(
             			texto, canciones.nombreCancion(j),
@@ -266,8 +324,8 @@ public class DibujadoSeleccion extends DibujadoGeneral {
             		);
             		texto.draw(
             			dibujadoPantalla, renderTexto,
-            			(i - MAX_PORTADAS / 2) * 350 + (k / 2) * 4 - 2 + animacion,
-            			115 + (k % 2) * 4 + 2
+            			posBarraX + (k / 2) * 4 - 2 + animacion,
+            			115 + (k % 2) * 4 + 2 + posTextY
             		);
         		}
         		
@@ -279,8 +337,8 @@ public class DibujadoSeleccion extends DibujadoGeneral {
         		);
         		texto.draw(
         			dibujadoPantalla, renderTexto,
-        			(i - MAX_PORTADAS / 2) * 350 + animacion,
-        			120
+        			posBarraX + animacion,
+        			120 + posTextY
         		);
         		
         		dibujadoPantalla.end();
@@ -293,7 +351,6 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 		sprBotones.setOrigin(150 + Coord.RESOL_X / 2, 150);
 		sprBotones.setPosition(-Coord.RESOL_X / 4 + 150 + animacion * .25f, -45);
 		sprBotones.setScale(0.5f + 0.015f * animBrincos);
-		
 		sprBotones.draw(dibujadoPantalla);
 
 		//Botón Derecha
@@ -301,6 +358,13 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 		sprBotones.setOrigin(150 - Coord.RESOL_X / 2, 150);
 		sprBotones.setPosition(Coord.RESOL_X + 150f / 4 + animacion * .25f, -45);
 		sprBotones.setScale(0.5f + 0.015f * animBrincos);
+		sprBotones.draw(dibujadoPantalla);
+		
+		//Botón inicio
+		sprBotones.setRegion(0, 0, 150, 150);
+		sprBotones.setOrigin(150, 150);
+		sprBotones.setPosition(Coord.RESOL_X / 2 - 150, 105 - 150);
+		sprBotones.setScale(0.25f + 0.015f * animBrincos);
 		sprBotones.draw(dibujadoPantalla);
         
         dibujadoPantalla.end();
