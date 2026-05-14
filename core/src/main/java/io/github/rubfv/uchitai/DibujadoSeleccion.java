@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
@@ -18,8 +19,38 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 public class DibujadoSeleccion extends DibujadoGeneral {
-    protected Texture txtTitulo, txtKanji, txtShaderFondo;
-    protected Sprite sprTitulo, sprKanji;
+    public class Animacion{
+    		private final int MAX_FRAMES_MOV = 60;
+    		private float framesMov;
+    		
+    		public Animacion() {
+    			framesMov = 0;
+    		}
+    		
+    		public void animar() {
+    			framesMov /= 1.125f;
+    			
+    			if (framesMov >= -1 && framesMov < 0 ||
+    				framesMov > 0 && framesMov <= 1) {
+    				framesMov = 0;
+    			}
+    		}
+    		
+    		public float relacionAnim() {
+    			return (float) framesMov / MAX_FRAMES_MOV;
+    		}
+    		
+    		public void animDeslizarDer() {
+			framesMov += MAX_FRAMES_MOV;
+    		}
+    		
+    		public void animDeslizarIzq() {
+			framesMov -= MAX_FRAMES_MOV;
+    		}
+    };
+    
+    protected Texture txtTitulo, txtKanji, txtShaderFondo, txtBotones;
+    protected Sprite sprTitulo, sprKanji, sprBotones;
     protected BitmapFont texto;
     protected CancionesCargadas canciones;
     protected ShaderProgram shaderFondo;
@@ -27,12 +58,15 @@ public class DibujadoSeleccion extends DibujadoGeneral {
     protected Texture[] txtPortadas;
     protected Sprite[] sprPortadas;
     protected Sprite portadaAct;
-    protected final int MAX_PORTADAS = 7;		//Cantidad de portadas cargadas en memoria, debe ser impar
+    protected final int MAX_PORTADAS = 9;		//Cantidad de portadas cargadas en memoria, debe ser impar
+    
+    public Animacion anim;
     
     DibujadoSeleccion(DibujadoGeneral dib, CancionesCargadas canciones) {
     		this.canciones = canciones;
     		txtPortadas = new Texture[canciones.size()];
     		sprPortadas = new Sprite[canciones.size()];
+    		anim = new Animacion();
     		cargar(dib);
     }
 
@@ -52,6 +86,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 			txtKanji = titulo.txtKanji;
 			texto = titulo.texto;
 		}
+		txtBotones = new Texture("hud/botones_seleccion.png");
     		shaderFondo = new ShaderProgram(
     			Gdx.files.internal("Hud/default.vert"),
     			Gdx.files.internal("Hud/mascara.frag")
@@ -60,6 +95,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 		
 		sprTitulo = new Sprite(txtTitulo);
 		sprKanji = new Sprite(txtKanji);
+		sprBotones = new Sprite(txtBotones);
 		
 	    sprTitulo.setScale(0.25f);
 	    sprKanji.setScale(0.25f);
@@ -74,7 +110,6 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 	
 	public void recargarTexturas() {
 		int l = canciones.getIndiceCancion();
-		int BASURA = 0;
 		//Limpieza original
 		for (int i = 0; i < canciones.size(); i++) {
 			//Descargar solo las texturas necesarias según el nuevo índice
@@ -82,7 +117,6 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 				if (txtPortadas[i] != null) {
 					txtPortadas[i].dispose();
 					txtPortadas[i] = null;
-					BASURA++;
 				}
 				if (sprPortadas[i] != null) {
 					sprPortadas[i] = null;
@@ -90,10 +124,10 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 			}
 		}
 		
-		System.out.println("BASURA: " + BASURA);
-		
 		for (int i = 0, j = canciones.getIndiceCancion() - MAX_PORTADAS / 2; i < MAX_PORTADAS; i++, j++) {
 			if (j >= 0 && j < canciones.size() && txtPortadas[j] == null) {
+				Coord escala = new Coord(1, 1);
+				Coord escSprite = new Coord(1, 1);
 				Texture textura;
 				Sprite sprite;
 				String ruta = canciones.rutaCancion(j) + "/" + canciones.nombreCancion(j) + ".png";
@@ -113,8 +147,13 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 		    	    }
 	        		
 	        		txtPortadas[j] = (textura);
+	        		//Imagen reescalada para caber en el selector
+	        		escala.x = 430f / textura.getWidth();
+	        		escala.y = 150f / textura.getHeight();
 	        		sprite = new Sprite(textura);
-	        		sprite.setScale(400f / textura.getWidth());
+	        		//Resol 2:1
+	        		sprite.setRegion(0, textura.getHeight() / 4, textura.getWidth(), textura.getHeight() / 2);
+	        		sprite.setScale(escala.x, escala.y);
 	        		sprPortadas[j] = (sprite);
 			}
 		}
@@ -123,7 +162,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 	}
 	
 	@Override
-    public void descargar(DibujadoGeneral nuevo) {
+    public void descargar(DibujadoGeneral nuevo) {		
 		//Limpieza de solo lo necesario
     		if (!(nuevo instanceof DibujadoTitulo)) {
 	        txtTitulo.dispose();
@@ -142,15 +181,16 @@ public class DibujadoSeleccion extends DibujadoGeneral {
     			}
     		}
     		
+    		txtBotones.dispose();
     		txtShaderFondo.dispose();
     		shaderFondo.dispose();
     	}
 	
 	@Override
     public void dibujar() {
-		Rectangle barra = new Rectangle(0, 30, Coord.RESOL_X, 150);
 		GlyphLayout renderTexto = new GlyphLayout();
 		int indice = canciones.getIndiceCancion();
+		float animacion = 350 * anim.relacionAnim();
 		float animBrincos;
 		
         ScreenUtils.clear(.10f, .09f, .11f, 1);
@@ -208,13 +248,11 @@ public class DibujadoSeleccion extends DibujadoGeneral {
         		txtPortadas[j].bind(0);
         		
         		//Dibujado del fondo
-        		ScissorStack.pushScissors(barra);
-    			sprPortadas[j].setCenter((i) * 350, 105);
+    			sprPortadas[j].setCenter((i - 1) * 350 - 87.5f + animacion, 105);
     			sprPortadas[j].draw(dibujadoPantalla);
     			
     			//Quitar el shader porque si no todo vale cola
     			dibujadoPantalla.flush();
-    			ScissorStack.popScissors();
     			dibujadoPantalla.end();
         		dibujadoPantalla.setShader(null);
 
@@ -223,28 +261,50 @@ public class DibujadoSeleccion extends DibujadoGeneral {
         		for (int k = 0; k < 4; k++) {
             		renderTexto.setText(
             			texto, canciones.nombreCancion(j),
-            			new Color(0, 0, 0, 1f), 300,
-            			Align.center, true
+            			new Color(0, 0, 0, 1f), Coord.RESOL_X,
+            			Align.center, false
             		);
             		texto.draw(
             			dibujadoPantalla, renderTexto,
-            			(Coord.RESOL_X - renderTexto.width) / 2 + (i - MAX_PORTADAS / 2) * 350 + (k / 2) * 4 - 2,
-            			160 + (k % 2) * 4 + 2
+            			(i - MAX_PORTADAS / 2) * 350 + (k / 2) * 4 - 2 + animacion,
+            			115 + (k % 2) * 4 + 2
             		);
         		}
         		
         		//Texto real
         		renderTexto.setText(
         			texto, canciones.nombreCancion(j),
-        			new Color(1, 0.9f, 0.95f, 1), 300,
-        			Align.center, true
+        			new Color(1, 0.9f, 0.95f, 1), Coord.RESOL_X,
+        			Align.center, false
         		);
         		texto.draw(
         			dibujadoPantalla, renderTexto,
-        			(Coord.RESOL_X - renderTexto.width) / 2 + (i - MAX_PORTADAS / 2) * 350,
-        			165
+        			(i - MAX_PORTADAS / 2) * 350 + animacion,
+        			120
         		);
+        		
         		dibujadoPantalla.end();
         }
+        
+        dibujadoPantalla.begin();
+
+		//Botón Izquierda
+		sprBotones.setRegion(0, 150, 150, 150);
+		sprBotones.setOrigin(150 + Coord.RESOL_X / 2, 150);
+		sprBotones.setPosition(-Coord.RESOL_X / 4 + 150 + animacion * .25f, -45);
+		sprBotones.setScale(0.5f + 0.015f * animBrincos);
+		
+		sprBotones.draw(dibujadoPantalla);
+
+		//Botón Derecha
+		sprBotones.setRegion(150, 150, 150, 150);
+		sprBotones.setOrigin(150 - Coord.RESOL_X / 2, 150);
+		sprBotones.setPosition(Coord.RESOL_X + 150f / 4 + animacion * .25f, -45);
+		sprBotones.setScale(0.5f + 0.015f * animBrincos);
+		sprBotones.draw(dibujadoPantalla);
+        
+        dibujadoPantalla.end();
+        
+        anim.animar();
 	}
 }

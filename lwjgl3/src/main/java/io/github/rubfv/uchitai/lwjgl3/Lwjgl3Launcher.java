@@ -33,6 +33,7 @@ public class Lwjgl3Launcher {
         configuration.setWindowedMode(Coord.RESOL_X, Coord.RESOL_Y);
         //// You can change these files; they are in lwjgl3/src/main/resources/ .
         //// They can also be loaded from the root of assets/ .
+        ////configuration.setFullscreenMode(configuration.getDisplayMode());
         configuration.setWindowIcon("logo.png");
 
         //// This could improve compatibility with Windows machines with buggy OpenGL drivers, Macs

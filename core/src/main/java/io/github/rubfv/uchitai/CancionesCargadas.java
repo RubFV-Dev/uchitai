@@ -63,9 +63,36 @@ public class CancionesCargadas {
 	    		canciones[i] = new FileHandle(carpetas.get(i).path());
 	    }
     }
+
+    public void antCancion() {
+    		if (indiceCancionAct - 1 >= 0) {
+    			UchitaiGame juego = (UchitaiGame)Gdx.app.getApplicationListener();
+    			if (juego.getDibujado() instanceof DibujadoSeleccion) {
+    				DibujadoSeleccion sel = (DibujadoSeleccion)juego.getDibujado();
+    				
+    				sel.anim.animDeslizarIzq();
+    			}
+    			indiceCancionAct--;
+    			cargarCancion(indiceCancionAct);
+    		}
+    }
+    
+    public void sigCancion() {
+    		if (indiceCancionAct + 1 < canciones.length) {
+    			UchitaiGame juego = (UchitaiGame)Gdx.app.getApplicationListener();
+    			if (juego.getDibujado() instanceof DibujadoSeleccion) {
+    				DibujadoSeleccion sel = (DibujadoSeleccion)juego.getDibujado();
+    				
+    				sel.anim.animDeslizarDer();
+    			}
+    			indiceCancionAct++;
+    			cargarCancion(indiceCancionAct);
+    		}
+    }
     
     // -1 para aleatorio
     public void cargarCancion(int i) {
+		UchitaiGame juego = (UchitaiGame)Gdx.app.getApplicationListener();
 	    if (i < 0 || i >= canciones.length) {
 		    //Elige una canción al azar
 	    		do {
@@ -124,6 +151,15 @@ public class CancionesCargadas {
 		);
 		
 		indiceCancionAct = i;
+
+		//Cargar en el juego el nuevo índice
+		DibujadoGeneral.cargarFondoCancion(sprFondo);
+		//Si está en la selección, recarga las portadas cargadas
+		if (juego.getDibujado() instanceof DibujadoSeleccion) {
+			DibujadoSeleccion sel = (DibujadoSeleccion)juego.getDibujado();
+			
+			sel.recargarTexturas();
+		}
     }
     
     public void dispose() {

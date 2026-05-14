@@ -47,6 +47,23 @@ public class UchitaiGame extends ApplicationAdapter {
     public DibujadoGeneral getDibujado() {
     		return dibujado;
     }
+    
+    @Override
+    public void resize(int width, int height) {
+    		int tamHorizont = width;
+    		int tamVertical = (int) (width / Coord.RATIO);
+    		int tamX, tamY;
+    		
+    		if (tamVertical > height) {
+    			tamHorizont = (int) (height * Coord.RATIO);
+    			tamVertical = height;
+    		}
+    		
+    		tamX = (int) (width - tamHorizont) / 2;
+    		tamY = (int) (height - tamVertical) / 2;
+    		
+    		Gdx.gl.glViewport(tamX, tamY, tamHorizont, tamVertical);
+    }
 
     //Aquí se cargan las imágenes
     @Override

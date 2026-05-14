@@ -1,8 +1,12 @@
 package io.github.rubfv.uchitai;
 
+import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 abstract public class DibujadoGeneral {
     protected static SpriteBatch dibujadoPantalla = new SpriteBatch();
@@ -23,6 +27,10 @@ abstract public class DibujadoGeneral {
     public static void dispose() {
     		dibujadoPantalla.dispose();
     		figurasPantalla.dispose();
+    }
+    
+    public static SpriteBatch getBatch() {
+    		return dibujadoPantalla;
     }
     
     //Fondo coqueto que todos comparten

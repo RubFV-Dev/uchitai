@@ -27,34 +27,23 @@ public class InputGeneral extends InputAdapter {
 		switch (juego.getPantallaAct()) {
 		case SELECCION:	
 			if (keycode == Input.Keys.LEFT) {
-				int indice = juego.getCanciones().getIndiceCancion();
-				
-				if (indice - 1 >= 0) {
-					juego.getCanciones().cargarCancion(indice - 1);
-					DibujadoGeneral.cargarFondoCancion(juego.getCanciones().getSprite());
-					
-					if (juego.getDibujado() instanceof DibujadoSeleccion) {
-						DibujadoSeleccion sel = (DibujadoSeleccion)juego.getDibujado();
-						
-						sel.recargarTexturas();
-					}
-				}
+				juego.getCanciones().antCancion();
 			}
 			if (keycode == Input.Keys.RIGHT) {
-				int indice = juego.getCanciones().getIndiceCancion();
-				
-				if (indice + 1 < juego.getCanciones().size()) {
-					juego.getCanciones().cargarCancion(indice + 1);
-					DibujadoGeneral.cargarFondoCancion(juego.getCanciones().getSprite());
-					
-					if (juego.getDibujado() instanceof DibujadoSeleccion) {
-						DibujadoSeleccion sel = (DibujadoSeleccion)juego.getDibujado();
-						
-						sel.recargarTexturas();
-					}
-				}
+				juego.getCanciones().sigCancion();
 			}
 			break;
+		}
+		
+		if (keycode == Input.Keys.ESCAPE) {
+			Gdx.app.exit();
+		}
+		
+		//para conocer las canciones actualmente cargadas
+		if (keycode == Input.Keys.ALT_LEFT) {
+			for (int i = 0; i < juego.getCanciones().size(); i++) {
+				System.out.println(juego.getCanciones().nombreCancion(i));
+			}
 		}
 		
 		return false;
@@ -74,13 +63,55 @@ public class InputGeneral extends InputAdapter {
 	
 	@Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+		Coord scale = new Coord(), ajuste = new Coord();
+		scale.y = ((float)Coord.RESOL_Y / (float)Gdx.graphics.getHeight());
+		scale.x = ((float)Coord.RESOL_X / (float)Gdx.graphics.getWidth());
+		
 		UchitaiGame juego = (UchitaiGame)Gdx.app.getApplicationListener();
+		
+		ajuste.x = (Gdx.graphics.getWidth() * scale.y - Gdx.graphics.getWidth() * scale.x) / 2;
+		ajuste.y = (Gdx.graphics.getHeight() * scale.x - Gdx.graphics.getHeight() * scale.y) / 2;
+		
+		//Ajuste de resolución porque es un dolor de cocos
+		if (ajuste.x > 0) {
+			screenX *= scale.y;
+			screenX -= ajuste.x;
+		}
+		else {
+			screenX *= scale.x;
+		}
+		if (ajuste.y > 0) {
+			screenY *= scale.x;
+			screenY -= ajuste.y;
+		}
+		else {
+			screenY *= scale.y;
+		}
+		screenY = Coord.RESOL_Y - screenY;
 		
 		switch (button) {
 		case Input.Buttons.LEFT:
 			switch(juego.getPantallaAct()) {
 			case TITULO:
 				juego.setPantallaAct(PANTALLA.SELECCION);
+				return true;
+			case SELECCION:
+				//Detectar botón anterior canción
+				if (screenX >= 180 && screenX < Coord.RESOL_X / 2 - 255  &&
+					screenY >= 30 && screenY < 180) {
+					System.out.println(true);
+					juego.getCanciones().antCancion();
+				}
+				else if (screenX >= Coord.RESOL_X / 2 + 255 && screenX < Coord.RESOL_X - 180 &&
+						screenY >= 30 && screenY < 180) {
+					System.out.println(true);
+					juego.getCanciones().sigCancion();
+				}
+				else {
+					System.out.println("MOUSE: " + screenX + "\t" + screenY);
+					System.out.println("SCRR: " + Gdx.graphics.getWidth() + "\t" + Gdx.graphics.getHeight());
+					System.out.println("SCAL: " + scale.x + "\t" + scale.y);
+				}
 				return true;
 			}
 			break;
