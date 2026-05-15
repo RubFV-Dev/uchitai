@@ -348,6 +348,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 
 		//Botón Izquierda
 		sprBotones.setRegion(0, 150, 150, 150);
+		sprBotones.setSize(300,  300);
 		sprBotones.setOrigin(150 + Coord.RESOL_X / 2, 150);
 		sprBotones.setPosition(-Coord.RESOL_X / 4 + 150 + animacion * .25f, -45);
 		sprBotones.setScale(0.5f + 0.015f * animBrincos);
@@ -355,6 +356,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 
 		//Botón Derecha
 		sprBotones.setRegion(150, 150, 150, 150);
+		sprBotones.setSize(300,  300);
 		sprBotones.setOrigin(150 - Coord.RESOL_X / 2, 150);
 		sprBotones.setPosition(Coord.RESOL_X + 150f / 4 + animacion * .25f, -45);
 		sprBotones.setScale(0.5f + 0.015f * animBrincos);
@@ -362,6 +364,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 		
 		//Botón inicio
 		sprBotones.setRegion(0, 0, 150, 150);
+		sprBotones.setSize(300,  300);
 		sprBotones.setOrigin(150, 150);
 		sprBotones.setPosition(Coord.RESOL_X / 2 - 150, 105 - 150);
 		sprBotones.setScale(0.25f + 0.015f * animBrincos);
