@@ -31,6 +31,7 @@ public class UchitaiGame extends ApplicationAdapter {
     private InputGeneral input;
     private DibujadoGeneral dibujado;
     private CancionesCargadas canciones;
+    private Coord mouse;
     
     public PANTALLA getPantallaAct() {
     		return pantallaAct;
@@ -68,9 +69,11 @@ public class UchitaiGame extends ApplicationAdapter {
     //Aquí se cargan las imágenes
     @Override
     public void create() {
-    		input = new InputGeneral(pantallaAct);
+		mouse = new Coord();
+    		input = new InputGeneral(pantallaAct, mouse);
     		canciones = new CancionesCargadas();
     		Gdx.input.setInputProcessor(input);
+    		DibujadoGeneral.setMouse(mouse);
     		
         pantallaAct = PANTALLA.TITULO;
         orgPantallaAct = PANTALLA.TITULO;

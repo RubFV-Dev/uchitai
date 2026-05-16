@@ -138,11 +138,11 @@ public class CancionesCargadas {
 		//Configurar imagen de fondo
 		//La imagen tiene un ratio menor o igual a 16:9
 		if (txtFondo.getWidth() / txtFondo.getHeight() <= Coord.RATIO) {
-			sprFondo.setScale((float)Coord.RESOL_X / txtFondo.getWidth());
+			sprFondo.setScale((float)(Coord.RESOL_X + 10) / txtFondo.getWidth());
 		}
 		//La imagen tiene un ratio mayor a 16:9
 		else {
-			sprFondo.setScale((float)Coord.RESOL_Y / txtFondo.getHeight());
+			sprFondo.setScale((float)(Coord.RESOL_Y + 10) / txtFondo.getHeight());
 		}
 		//Centrar
 		sprFondo.setPosition(

@@ -13,4 +13,12 @@ public class Coord {
 		this.x = x;
 		this.y = y;
 	}
+	
+	public boolean dentroDe(float xMin, float xMax, float yMin, float yMax) {
+		return (x >= xMin && x < xMax && y >= yMin && y < yMax);
+	}
+	
+	public void setCoord(float x, float y) {
+		this.x = x; this.y = y;
+	}
 }

@@ -19,24 +19,52 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 public class DibujadoSeleccion extends DibujadoGeneral {
-    public class Animacion{
+    protected class Animacion{
     		private final int MAX_FRAMES_MOV = 40;
+    		private final int MAX_SCALE_EX = 100;
     		private float framesMov;
     		private Sprite sprFondoAnt;
     		private CancionesCargadas canciones;
+    		private float scaleEx;
     		
     		public Animacion(CancionesCargadas c) {
     			framesMov = 0;
     			sprFondoAnt = null;
     			canciones = c;
+    			scaleEx = 0;
+    		}
+    		
+    		public void animScaleEx() {
+    			//Animar la escala
+    			if (scaleEx < MAX_SCALE_EX) {
+        			scaleEx /= .125f;
+    			}
+    			
+    			//Ajustar la escala
+    			if (scaleEx > MAX_SCALE_EX) {
+    				scaleEx = MAX_SCALE_EX;
+    			}
+    			
+    			//Iniciar animación de la escala
+    			if (scaleEx == 0) {
+    				scaleEx = 1;
+    			}
+    		}
+    		
+    		public float getScaleEx() {
+    			return scaleEx / MAX_SCALE_EX;
+    		}
+    		
+    		public void reiniciarScaleEx() {
+    			scaleEx = 0;
     		}
     		
     		public void animar() {
     			framesMov /= 1.125f;		//Mover
     			
     			//Detener animación
-    			if (framesMov >= -1 && framesMov < 0 ||
-    				framesMov > 0 && framesMov <= 1) {
+    			if (framesMov >= -1.5f && framesMov < 0 ||
+    				framesMov > 0 && framesMov <= 1.5f) {
     				framesMov = 0;
     				sprFondoAnt = null;
     			}
@@ -221,32 +249,45 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 	@Override
     public void dibujar() {
 		GlyphLayout renderTexto = new GlyphLayout();
+		boolean cursorEncima = false;
 		int indice = canciones.getIndiceCancion();
 		float animacion = 350 * anim.relacionAnim();
-		float animBrincos;
+		float animBrincos, animBoton = 0;
 		float relacionAnimAj = Math.abs(anim.relacionAnim()) > 1 ? 1 : Math.abs(anim.relacionAnim());
 		
         ScreenUtils.clear(.10f, .09f, .11f, 1);
         frames = Gdx.graphics.getFrameId();
-        mouse.x = Gdx.input.getX();
-        mouse.y = Coord.RESOL_Y - Gdx.input.getY();
 
         animBrincos = (float)(frames % bmp) / bmp;
         
         /*------ Dibujado Fondo -----*/
         dibujadoPantalla.begin();
 
+        //Animación fondo cambio de canción
         if (anim.getSprAnt() != null) {
+        		//variables encargadas de la animación
         		float anima = anim.relacionAnim() > 0 ? -1.0f: 1.0f;
+        		float relacionAnimLim = 0;
+        		
+        		//Se limita la variable de animación a 1 o -1 para evitar errores gráficos
+            if (anim.relacionAnim() > 0) {
+            		relacionAnimLim = anim.relacionAnim() > 1.0f ? 1.0f : anim.relacionAnim();
+            }
+            else if (anim.relacionAnim() < 0){
+        			relacionAnimLim = anim.relacionAnim() < -1.0f ? -1.0f : anim.relacionAnim();
+            }
+        		
+            //Ajuste de la imagen de fondo
     			anim.getSprAnt().setPosition(
-    				(Coord.RESOL_X - anim.getSprAnt().getWidth()) / 2 + Coord.RESOL_X * (anima + anim.relacionAnim()), 
+    				(Coord.RESOL_X - anim.getSprAnt().getWidth()) / 2 + Coord.RESOL_X * (anima + relacionAnimLim), 
     				(Coord.RESOL_Y - anim.getSprAnt().getHeight()) / 2
     			);
             anim.getSprAnt().draw(dibujadoPantalla);
         }
+        //Animación del fondo actual
         sprFondo.setPosition(
-        		(Coord.RESOL_X - sprFondo.getWidth()) / 2 + Coord.RESOL_X * (anim.relacionAnim()), 
-        		(Coord.RESOL_Y - sprFondo.getHeight()) / 2
+        		(Coord.RESOL_X - sprFondo.getWidth()) / 2 + Coord.RESOL_X * (anim.relacionAnim()) + mouse.x / Coord.RESOL_X * 10 - 5, 
+        		(Coord.RESOL_Y - sprFondo.getHeight()) / 2  + mouse.y / Coord.RESOL_Y * 10 - 5
         	);
         sprFondo.draw(dibujadoPantalla);
         
@@ -363,13 +404,49 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 		sprBotones.draw(dibujadoPantalla);
 		
 		//Botón inicio
+		if (mouse.dentroDe(Coord.RESOL_X / 2 - 30, Coord.RESOL_X / 2 + 30, 75, 135)) 	{
+			anim.animScaleEx();
+			animBoton = anim.getScaleEx() * .125f;
+			cursorEncima = true;
+		}
+		else animBoton = 0;
 		sprBotones.setRegion(0, 0, 150, 150);
-		sprBotones.setSize(300,  300);
-		sprBotones.setOrigin(150, 150);
-		sprBotones.setPosition(Coord.RESOL_X / 2 - 150, 105 - 150);
-		sprBotones.setScale(0.25f + 0.015f * animBrincos);
+		sprBotones.setSize(150,  150);
+		sprBotones.setOrigin(75, 75);
+		sprBotones.setPosition(Coord.RESOL_X / 2 - 75, 30);
+		sprBotones.setScale(0.5f + 0.03f * animBrincos + animBoton);
 		sprBotones.draw(dibujadoPantalla);
-        
+
+		//Botón Editar
+		if (mouse.dentroDe(Coord.RESOL_X - 205, Coord.RESOL_X - 95, 200, 300)) 	{
+			anim.animScaleEx();
+			animBoton = anim.getScaleEx() * .1f;
+			cursorEncima = true;
+		}
+		else animBoton = 0;
+		sprBotones.setRegion(150, 0, 150, 150);
+		sprBotones.setSize(150,  150);
+		sprBotones.setOrigin(75, 75);
+		sprBotones.setPosition(Coord.RESOL_X - 225, 175);
+		sprBotones.setScale(0.9f + 0.02f * animBrincos + animBoton);
+		sprBotones.draw(dibujadoPantalla);
+
+		//Botón Aleatorio
+		if (mouse.dentroDe(95, 205, 200, 300)) {
+			anim.animScaleEx();
+			animBoton = anim.getScaleEx() * .1f;
+			cursorEncima = true;
+		}
+		else animBoton = 0;
+		sprBotones.setRegion(300, 0, 150, 150);
+		sprBotones.setSize(150,  150);
+		sprBotones.setOrigin(75, 75);
+		sprBotones.setPosition(75, 175);
+		sprBotones.setScale(0.9f + 0.02f * animBrincos + animBoton);
+		sprBotones.draw(dibujadoPantalla);
+		
+		if (!cursorEncima) anim.reiniciarScaleEx();
+		
         dibujadoPantalla.end();
         
         anim.animar();

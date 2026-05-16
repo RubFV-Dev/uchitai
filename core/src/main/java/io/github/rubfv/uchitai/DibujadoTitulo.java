@@ -67,8 +67,6 @@ public class DibujadoTitulo extends DibujadoGeneral {
 		
         ScreenUtils.clear(.10f, .09f, .11f, 1);
         frames = Gdx.graphics.getFrameId();
-        mouse.x = Gdx.input.getX();
-        mouse.y = Coord.RESOL_Y - Gdx.input.getY();
 
         animBrincos = (float)(frames % bmp) / bmp;
         

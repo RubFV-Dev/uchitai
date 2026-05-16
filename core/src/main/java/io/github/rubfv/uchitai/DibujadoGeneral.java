@@ -13,7 +13,7 @@ abstract public class DibujadoGeneral {
     protected static ShapeRenderer figurasPantalla = new ShapeRenderer();
     protected static int bmp;
     protected static long frames;
-    protected static Coord mouse = new Coord();
+    protected static Coord mouse;
     protected static Sprite sprFondo;
     
     //Esta función se encargará de cargar a memoria los recursos necesarios para la pantalla, optimizado
@@ -36,5 +36,9 @@ abstract public class DibujadoGeneral {
     //Fondo coqueto que todos comparten
     public static void cargarFondoCancion(Sprite fondo) {
     		sprFondo = fondo;
+    }
+    
+    public static void setMouse(Coord m) {
+    		mouse = m;
     }
 }
