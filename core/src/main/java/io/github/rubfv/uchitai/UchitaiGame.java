@@ -74,6 +74,7 @@ public class UchitaiGame extends ApplicationAdapter {
     		canciones = new CancionesCargadas();
     		Gdx.input.setInputProcessor(input);
     		DibujadoGeneral.setMouse(mouse);
+    		Gdx.graphics.setWindowedMode(1280, 720);
     		
         pantallaAct = PANTALLA.TITULO;
         orgPantallaAct = PANTALLA.TITULO;
@@ -89,6 +90,7 @@ public class UchitaiGame extends ApplicationAdapter {
     //Aquí iría la lógica del juego que depende del tiempo
     @Override
     public void render() {
+    		//Si cambia de pantalla, se reorganiza la clase dibujado
 		if (pantallaAct != orgPantallaAct) {
 			DibujadoGeneral nuevo = null;
 			

@@ -146,8 +146,8 @@ public class CancionesCargadas {
 		}
 		//Centrar
 		sprFondo.setPosition(
-		(Coord.RESOL_X - sprFondo.getWidth()) / 2, 
-		(Coord.RESOL_Y - sprFondo.getHeight()) / 2
+			(Coord.RESOL_X - sprFondo.getWidth()) / 2, 
+			(Coord.RESOL_Y - sprFondo.getHeight()) / 2
 		);
 		
 		indiceCancionAct = i;

@@ -20,8 +20,8 @@ import com.badlogic.gdx.utils.ScreenUtils;
 
 public class DibujadoSeleccion extends DibujadoGeneral {
     protected class Animacion{
-    		private final int MAX_FRAMES_MOV = 40;
-    		private final int MAX_SCALE_EX = 100;
+    		private static final int MAX_FRAMES_MOV = 40;
+    		private static final int MAX_SCALE_EX = 100;
     		private float framesMov;
     		private Sprite sprFondoAnt;
     		private CancionesCargadas canciones;
@@ -173,7 +173,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 		//Limpieza original
 		for (int i = 0; i < canciones.size(); i++) {
 			//Descargar solo las texturas necesarias según el nuevo índice
-			if (i <= l - MAX_PORTADAS / 2 && i >= l - MAX_PORTADAS / 2) {
+			if (i <= l - MAX_PORTADAS / 2 && i > l - MAX_PORTADAS / 2) {
 				if (txtPortadas[i] != null) {
 					txtPortadas[i].dispose();
 					txtPortadas[i] = null;
@@ -191,7 +191,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 				Texture textura;
 				Sprite sprite;
 				String ruta = canciones.rutaCancion(j) + "/" + canciones.nombreCancion(j) + ".png";
-				System.out.println(ruta);
+				System.out.println("CARGADO: " + ruta);
 
 	        		try {
 	        		    textura = new Texture(Gdx.files.internal(ruta));
@@ -217,8 +217,6 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 	        		sprPortadas[j] = (sprite);
 			}
 		}
-		
-		System.out.println();
 	}
 	
 	@Override

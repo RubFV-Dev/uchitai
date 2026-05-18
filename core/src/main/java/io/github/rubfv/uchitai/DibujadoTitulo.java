@@ -11,9 +11,33 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 public class DibujadoTitulo extends DibujadoGeneral {
+	protected class Transicion {
+		private static final int MAX_ANIM_TRANS = 80;
+		private float animTrans;
+		
+		Transicion() {
+			animTrans = 0;
+		}
+		
+		public void animar() {
+			animTrans /= 1.125f;		//Mover
+			
+			//Detener animación
+			if (animTrans >= -1.5f && animTrans < 0 ||
+				animTrans > 0 && animTrans <= 1.5f) {
+				animTrans = 0;
+			}
+		}
+		
+		public float relacionAnim() {
+			return (float) animTrans / MAX_ANIM_TRANS;
+		}
+	}
+	
     protected Texture txtTitulo, txtKanji;
     protected Sprite sprTitulo, sprKanji;
     protected BitmapFont texto;
+    protected Transicion trans;
     
     DibujadoTitulo(DibujadoGeneral dib) {
     		cargar(dib);

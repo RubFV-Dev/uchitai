@@ -39,6 +39,15 @@ public class InputGeneral extends InputAdapter {
 			break;
 		}
 		
+		if (keycode == Input.Keys.F5) {
+			if (!Gdx.graphics.isFullscreen()) {
+				Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
+			}
+			else {
+				Gdx.graphics.setWindowedMode(1280, 720);
+			}
+		}
+		
 		if (keycode == Input.Keys.ESCAPE) {
 			Gdx.app.exit();
 		}
@@ -72,6 +81,13 @@ public class InputGeneral extends InputAdapter {
 	}
 	
 	@Override
+	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+		ajusteMouse(screenX, screenY);
+		
+		return false;
+	}
+	
+	@Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 		UchitaiGame juego = (UchitaiGame)Gdx.app.getApplicationListener();
 		ajusteMouse(screenX, screenY);
@@ -85,12 +101,10 @@ public class InputGeneral extends InputAdapter {
 			case SELECCION:
 				//Detectar selección anterior canción
 				if (mouse.dentroDe(180, Coord.RESOL_X / 2 - 255, 30, 180)) {
-					System.out.println(true);
 					juego.getCanciones().antCancion();
 				}
 				//Detectar selección aiguiente canción
 				else if (mouse.dentroDe(Coord.RESOL_X / 2 + 255, Coord.RESOL_X - 180, 30, 180)) {
-					System.out.println(true);
 					juego.getCanciones().sigCancion();
 				}
 				//Botón inicio canción
