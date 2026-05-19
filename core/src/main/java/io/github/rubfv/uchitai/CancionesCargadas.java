@@ -53,7 +53,7 @@ public class CancionesCargadas {
     }
     
     public void cargarListaCanciones() {
-	    FileHandle directorio = Gdx.files.local("/canciones/");
+	    FileHandle directorio = Gdx.files.local("../canciones/");
 	    ArrayList<FileHandle> carpetas = new ArrayList<>();
 	    System.out.println(directorio.path());
 	    
