@@ -29,6 +29,9 @@ public class InputGeneral extends InputAdapter {
 		UchitaiGame juego = (UchitaiGame)Gdx.app.getApplicationListener();
 		
 		switch (juego.getPantallaAct()) {
+		case TITULO:
+			juego.setPantallaAct(PANTALLA.SELECCION);
+			break;
 		case SELECCION:	
 			if (keycode == Input.Keys.LEFT) {
 				juego.getCanciones().antCancion();

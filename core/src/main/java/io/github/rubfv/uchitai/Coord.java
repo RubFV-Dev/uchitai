@@ -21,4 +21,9 @@ public class Coord {
 	public void setCoord(float x, float y) {
 		this.x = x; this.y = y;
 	}
+	
+	public void multipleCociente(float cock) {
+		x *= cock;
+		y *= cock;
+	}
 }

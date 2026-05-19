@@ -136,7 +136,6 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 		if (!(viejo instanceof DibujadoTitulo)) {
 			txtTitulo = new Texture("hud/titulo.png");
 			txtKanji = new Texture("hud/kanji.png");
-	    		texto = new BitmapFont(Gdx.files.internal("Fuente/Ashkar.fnt"));
 		}
 		//Copia las imágenes ya existentes
 		else {
@@ -144,8 +143,8 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 			
 			txtTitulo = titulo.txtTitulo;
 			txtKanji = titulo.txtKanji;
-			texto = titulo.texto;
 		}
+		texto = new BitmapFont(Gdx.files.internal("Fuente/Ashkar.fnt"));
 		txtBotones = new Texture("hud/botones_seleccion.png");
     		shaderFondo = new ShaderProgram(
     			Gdx.files.internal("Hud/default.vert"),
@@ -159,6 +158,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 		
 	    sprTitulo.setScale(0.25f);
 	    sprKanji.setScale(0.25f);
+		texto.getData().scaleX = 0.8f;
 			
 		sprTitulo.setX(-sprTitulo.getWidth() * sprTitulo.getScaleX() * 2 / 3);
 	    sprTitulo.setY((Coord.RESOL_Y - sprTitulo.getHeight()) / 3f);
@@ -225,7 +225,6 @@ public class DibujadoSeleccion extends DibujadoGeneral {
     		if (!(nuevo instanceof DibujadoTitulo)) {
 	        txtTitulo.dispose();
 	        txtKanji.dispose();
-	        texto.dispose();
 		}
 
     		//Limpieza de los arreglos de las portadas
@@ -238,7 +237,8 @@ public class DibujadoSeleccion extends DibujadoGeneral {
     				sprPortadas[i] = null;
     			}
     		}
-    		
+
+	    texto.dispose();
     		txtBotones.dispose();
     		txtShaderFondo.dispose();
     		shaderFondo.dispose();
@@ -449,4 +449,6 @@ public class DibujadoSeleccion extends DibujadoGeneral {
         
         anim.animar();
 	}
+	
+	
 }

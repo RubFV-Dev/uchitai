@@ -41,4 +41,8 @@ abstract public class DibujadoGeneral {
     public static void setMouse(Coord m) {
     		mouse = m;
     }
+    
+    public boolean transCompletada() {
+    		return true;
+    }
 }

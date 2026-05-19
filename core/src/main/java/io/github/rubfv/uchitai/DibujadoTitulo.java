@@ -16,21 +16,32 @@ public class DibujadoTitulo extends DibujadoGeneral {
 		private float animTrans;
 		
 		Transicion() {
-			animTrans = 0;
+			animTrans = -1;
 		}
 		
 		public void animar() {
-			animTrans /= 1.125f;		//Mover
-			
-			//Detener animación
-			if (animTrans >= -1.5f && animTrans < 0 ||
-				animTrans > 0 && animTrans <= 1.5f) {
-				animTrans = 0;
+			if (animTrans == -1) {
+				animTrans = MAX_ANIM_TRANS;
+			}
+			else {
+				animTrans /= 1.125;		//Mover
+				
+				//Detener animación
+				if (animTrans <= 1) {
+					animTrans = 0;
+				}
 			}
 		}
 		
 		public float relacionAnim() {
-			return (float) animTrans / MAX_ANIM_TRANS;
+			if (animTrans == -1) {
+				return 0;
+			}
+			return (float) (MAX_ANIM_TRANS - animTrans) / MAX_ANIM_TRANS;
+		}
+		
+		public boolean completado() {
+			return animTrans == 0;
 		}
 	}
 	
@@ -40,6 +51,7 @@ public class DibujadoTitulo extends DibujadoGeneral {
     protected Transicion trans;
     
     DibujadoTitulo(DibujadoGeneral dib) {
+    		trans = new Transicion();
     		cargar(dib);
     }
     
@@ -75,19 +87,21 @@ public class DibujadoTitulo extends DibujadoGeneral {
     
     @Override
     public void descargar(DibujadoGeneral nuevo) {
-		// 		Si la nueva pantalla es selección, no se borran
+		// 	  Si la nueva pantalla es selección, no se borran
 		//	los elementos ya cargados, se van a utilizar.
 		if (!(nuevo instanceof DibujadoSeleccion)) {
 	        txtTitulo.dispose();
 	        txtKanji.dispose();
-	        texto.dispose();
 		}
+        texto.dispose();
     }
     
     @Override
     public void dibujar() {
 		GlyphLayout renderTexto = new GlyphLayout();
 		float animBrincos;
+		float animTransicion = trans.relacionAnim();
+		Coord posTitulo = new Coord(), posKanji = new Coord();
 		
         ScreenUtils.clear(.10f, .09f, .11f, 1);
         frames = Gdx.graphics.getFrameId();
@@ -107,10 +121,19 @@ public class DibujadoTitulo extends DibujadoGeneral {
         //Fondo título
         figurasPantalla.set(ShapeType.Filled);
         figurasPantalla.setColor(new Color(0.05f, 0f, 0.075f, 0.25f));
-        figurasPantalla.rect(
-        		0, (Coord.RESOL_Y - 500) / 2,
-			Coord.RESOL_X, 70
-		);
+        
+        if (animTransicion == 0) {
+        		figurasPantalla.rect(
+        			0, 290,
+        			Coord.RESOL_X, 70
+    			);
+        }
+        else {
+        		figurasPantalla.rect(
+        			0, 290 - animTransicion * 260,
+        			Coord.RESOL_X, 70 + animTransicion * 80
+    			);
+        	}
         
         figurasPantalla.end();
         
@@ -123,26 +146,71 @@ public class DibujadoTitulo extends DibujadoGeneral {
         sprKanji.setScale(0.3f + 0.005f * animBrincos);
 
         //Movimiento relativo al ratón
-        sprTitulo.setPosition((Coord.RESOL_X - sprTitulo.getWidth()) / 2f, (Coord.RESOL_Y - sprTitulo.getHeight()) / 2f);
-        sprTitulo.setX(sprTitulo.getX() + (Coord.RESOL_X / 2 - mouse.x) * 0.025f);
-        sprTitulo.setY(sprTitulo.getY() + (Coord.RESOL_Y / 2 - mouse.y) * 0.025f);
+        posTitulo.x = (Coord.RESOL_X - sprTitulo.getWidth()) / 2f;
+        posTitulo.y = (Coord.RESOL_Y - sprTitulo.getHeight()) / 2f;
+        posTitulo.x += (Coord.RESOL_X / 2 - mouse.x) * 0.025f;
+        posTitulo.y += (Coord.RESOL_Y / 2 - mouse.y) * 0.025f;
+        
+        //Kanji
+        posKanji.x = (Coord.RESOL_X - sprKanji.getWidth()) / 2f;
+        posKanji.y = (Coord.RESOL_Y - sprKanji.getHeight()) / 2f;
+        posKanji.x += (Coord.RESOL_X / 2 - mouse.x) * 0.0125f;
+        posKanji.y += (Coord.RESOL_Y / 2 - mouse.y) * 0.0125f;
 
-        sprKanji.setPosition((Coord.RESOL_X - sprKanji.getWidth()) / 2f, (Coord.RESOL_Y - sprKanji.getHeight()) / 2f);
-        sprKanji.setX(sprKanji.getX() + (Coord.RESOL_X / 2 - mouse.x) * 0.0125f);
-        sprKanji.setY(sprKanji.getY() + (Coord.RESOL_Y / 2 - mouse.y) * 0.0125f);
-		
+        //Animar la transición a pantalla de selección
+        if (animTransicion != 0) {
+        		Coord posTituloEx = new Coord(), posKanjiEx = new Coord();
+        		//Cambio de tamaño
+            sprTitulo.setScale(
+            		(0.3f + 0.03f * animBrincos) * (1 - animTransicion) + 
+            		(0.25f + 0.015f * animBrincos) * animTransicion
+            	);
+            sprKanji.setScale(
+            		(0.3f + 0.005f * animBrincos) * (1 - animTransicion) + 
+            		(0.25f + 0.0025f * animBrincos) * animTransicion
+            	);
+	    
+            //Cambio de posición; extra
+            posTituloEx.x = -sprTitulo.getWidth() * sprTitulo.getScaleX() * 2 / 3;
+            posTituloEx.y = (Coord.RESOL_Y - sprTitulo.getHeight()) / 3f;
+            posKanjiEx.x = -sprKanji.getWidth() * sprKanji.getScaleX() * 2 / 3;
+            posKanjiEx.y = (Coord.RESOL_Y - sprKanji.getHeight()) / 3f;
+            
+            //Ajuste de multiplicador para que se vea fifiris nais
+            posTitulo.multipleCociente(1f - animTransicion);
+            posKanji.multipleCociente(1f - animTransicion);
+            posTituloEx.multipleCociente(animTransicion);
+            posKanjiEx.multipleCociente(animTransicion);
+
+            //Dibujado
+            sprTitulo.setPosition(posTitulo.x + posTituloEx.x, posTitulo.y + posTituloEx.y);
+            sprKanji.setPosition(posKanji.x + posKanjiEx.x, posKanji.y + posKanjiEx.y);
+        }
+        else {
+            sprTitulo.setPosition(posTitulo.x, posTitulo.y);
+            sprKanji.setPosition(posKanji.x, posKanji.y);
+        }
+        
         //Dibujado de cada elemento
         sprTitulo.draw(dibujadoPantalla);
         sprKanji.draw(dibujadoPantalla);
         
         /*--- Texto inicio de juego ---*/
-        texto.getData().scaleX = 0.8f + animBrincos * .0125f;
-        texto.getData().scaleY = 1f + animBrincos * .0125f;
+        if (animTransicion == 0) {
+            texto.getData().scaleX = 0.8f + animBrincos * .0125f;
+            texto.getData().scaleY = 1f + animBrincos * .0125f;
+        }
+        else {
+            texto.getData().scaleX = 0.8f + animBrincos * .0125f;
+            texto.getData().scaleX *= (1.0 - animTransicion);
+            texto.getData().scaleY = 1f + animBrincos * .0125f;
+            texto.getData().scaleY *= (1.0 - animTransicion);
+        }
         
         //Texto de sombra
 		renderTexto.setText(
 			texto, "Presiona una tecla para iniciar",
-			new Color(0, 0, 0, 0.45f), 500,
+			new Color(0, 0, 0, 0.45f * (1.0f - animTransicion)), 500,
 			Align.center, true
 		);
 		texto.draw(
@@ -154,15 +222,21 @@ public class DibujadoTitulo extends DibujadoGeneral {
 		//Texto real
 		renderTexto.setText(
 			texto, "Presiona una tecla para iniciar",
-			new Color(1, 0.9f, 0.95f, 1), 500,
+			new Color(1, 0.9f, 0.95f, (1.0f - animTransicion)), 500,
 			Align.center, true
 		);
 		texto.draw(
 			dibujadoPantalla, renderTexto,
 			(Coord.RESOL_X - renderTexto.width / texto.getScaleX()) / 2,
-			(Coord.RESOL_Y  + renderTexto.height - sprTitulo.getHeight() / 3) / 2
+			(Coord.RESOL_Y + renderTexto.height - sprTitulo.getHeight() / 3) / 2
 		);
 
 		dibujadoPantalla.end();
+    }
+    
+    @Override
+    public boolean transCompletada() {
+    		trans.animar();
+		return trans.completado();
     }
 }

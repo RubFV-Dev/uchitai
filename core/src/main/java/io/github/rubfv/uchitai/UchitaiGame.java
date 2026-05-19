@@ -92,20 +92,22 @@ public class UchitaiGame extends ApplicationAdapter {
     public void render() {
     		//Si cambia de pantalla, se reorganiza la clase dibujado
 		if (pantallaAct != orgPantallaAct) {
-			DibujadoGeneral nuevo = null;
-			
-			//Cargar nueva pantalla
-			switch (pantallaAct) {
-			case TITULO:		nuevo = new DibujadoTitulo(dibujado);		break;
-			case SELECCION:	nuevo = new DibujadoSeleccion(dibujado, canciones);		break;
+			if (dibujado.transCompletada()) {
+				DibujadoGeneral nuevo = null;
+				
+				//Cargar nueva pantalla
+				switch (pantallaAct) {
+				case TITULO:		nuevo = new DibujadoTitulo(dibujado);		break;
+				case SELECCION:	nuevo = new DibujadoSeleccion(dibujado, canciones);		break;
+				}
+				//Reestructurar
+				if (nuevo != null) {
+					dibujado.descargar(nuevo);
+					dibujado = nuevo;
+				}
+				
+				orgPantallaAct = pantallaAct;
 			}
-			//Reestructurar
-			if (nuevo != null) {
-				dibujado.descargar(nuevo);
-				dibujado = nuevo;
-			}
-			
-			orgPantallaAct = pantallaAct;
 		}
 		dibujado.dibujar();
     }
