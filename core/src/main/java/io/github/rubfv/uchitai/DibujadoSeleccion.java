@@ -186,35 +186,46 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 		
 		for (int i = 0, j = canciones.getIndiceCancion() - MAX_PORTADAS / 2; i < MAX_PORTADAS; i++, j++) {
 			if (j >= 0 && j < canciones.size() && txtPortadas[j] == null) {
-				Coord escala = new Coord(1, 1);
-				Coord escSprite = new Coord(1, 1);
-				Texture textura;
-				Sprite sprite;
-				String ruta = canciones.rutaCancion(j) + "/" + canciones.nombreCancion(j) + ".png";
-				System.out.println("CARGADO: " + ruta);
+				if (j != canciones.size() - 1) {
+					Coord escala = new Coord(1, 1);
+					Coord escSprite = new Coord(1, 1);
+					Texture textura;
+					Sprite sprite;
+					String ruta = canciones.rutaCancion(j) + "/" + canciones.nombreCancion(j) + ".png";
+					System.out.println("CARGADO: " + ruta);
 
-	        		try {
-	        		    textura = new Texture(Gdx.files.internal(ruta));
-		    	    }
-		    	    catch (Exception noFoto) {
-		    	    		// Esto no debería existir, pero lo dejo por flojo
-		    	    		Pixmap noFondo = new Pixmap(2, 2, Pixmap.Format.RGBA8888);
-		    	    		noFondo.setColor(new Color(0, 0, 0, 0));
-		    	    		noFondo.fill();
-		    	    		
-		    	    		textura = new Texture(noFondo);
-		    	    		noFondo.dispose();
-		    	    }
-	        		
-	        		txtPortadas[j] = (textura);
-	        		//Imagen reescalada para caber en el selector
-	        		escala.x = 430f / textura.getWidth();
-	        		escala.y = 150f / textura.getHeight();
-	        		sprite = new Sprite(textura);
-	        		//Resol 2:1
-	        		sprite.setRegion(0, textura.getHeight() / 4, textura.getWidth(), textura.getHeight() / 2);
-	        		sprite.setScale(escala.x, escala.y);
-	        		sprPortadas[j] = (sprite);
+		        		try {
+		        		    textura = new Texture(Gdx.files.internal(ruta));
+			    	    }
+			    	    catch (Exception noFoto) {
+			    	    		// Esto no debería existir, pero lo dejo por flojo
+			    	    		Pixmap noFondo = new Pixmap(2, 2, Pixmap.Format.RGBA8888);
+			    	    		noFondo.setColor(new Color(0, 0, 0, 0));
+			    	    		noFondo.fill();
+			    	    		
+			    	    		textura = new Texture(noFondo);
+			    	    		noFondo.dispose();
+			    	    }
+		        		
+		        		txtPortadas[j] = (textura);
+		        		//Imagen reescalada para caber en el selector
+		        		escala.x = 430f / textura.getWidth();
+		        		escala.y = 150f / textura.getHeight();
+		        		sprite = new Sprite(textura);
+		        		//Resol 2:1
+		        		sprite.setRegion(0, textura.getHeight() / 4, textura.getWidth(), textura.getHeight() / 2);
+		        		sprite.setScale(escala.x, escala.y);
+		        		sprPortadas[j] = (sprite);
+				}
+				else {
+					Pixmap noFondo = new Pixmap(2, 2, Pixmap.Format.RGBA8888);
+					noFondo.setColor(new Color(0.3984f, 0.13085f, 0.38475f, 1));
+					noFondo.fill();
+					
+					txtPortadas[j] = new Texture(noFondo);
+					sprPortadas[j] = new Sprite(txtPortadas[j]);
+					noFondo.dispose();
+				}
 			}
 		}
 	}
@@ -322,126 +333,176 @@ public class DibujadoSeleccion extends DibujadoGeneral {
         		if (j >= canciones.size() || j < 0) continue;  
         		int posBarraX = (i - MAX_PORTADAS / 2) * 350;
         		float posTextY = 0;
-        		
-        		//Dibujar fondo canción
-        		//Activa el shader del fondo con los triangulitos
-        		dibujadoPantalla.setShader(shaderFondo);
-        		dibujadoPantalla.begin();
-        		
-        		//Tecnisismos de OpenGL para shaders
-        		txtShaderFondo.bind(1);
-        		shaderFondo.setUniformi("u_mask", 1);
-        		txtPortadas[j].bind(0);
-        		
-        		//Dibujado del fondo
-    			sprPortadas[j].setCenter((i - 1) * 350 - 87.5f + animacion, 105);
-    			sprPortadas[j].draw(dibujadoPantalla);
-    			
-    			//Quitar el shader porque si no todo vale cola
-    			dibujadoPantalla.flush();
-    			dibujadoPantalla.end();
-        		dibujadoPantalla.setShader(null);
-
-            //Texto de sombra
-        		dibujadoPantalla.begin();
-        		
+        		//Animar título de canción
         		if (j == indice) {
         			posTextY = 75 - 75 * relacionAnimAj;
         		}
-        		if (animacion > 0 && j == indice - 1) {
+        		if ((animacion > 0 && j == indice - 1) || (animacion < 0 && j == indice + 1)) {
         			posTextY = 75 * relacionAnimAj;
         		}
-        		else if (animacion < 0 && j == indice + 1) {
-        			posTextY = 75 * relacionAnimAj;
-        		}
-        		
-        		for (int k = 0; k < 4; k++) {
+
+        		//Dibujar Detalles canción
+        		if (j != canciones.size() - 1) {
+            		//Dibujar fondo canción
+            		//Activa el shader del fondo con los triangulitos
+            		dibujadoPantalla.setShader(shaderFondo);
+            		dibujadoPantalla.begin();
+            		
+            		//Tecnisismos de OpenGL para shaders
+            		txtShaderFondo.bind(1);
+            		shaderFondo.setUniformi("u_mask", 1);
+            		txtPortadas[j].bind(0);
+            		
+            		//Dibujado del fondo
+        			sprPortadas[j].setCenter((i - 1) * 350 - 87.5f + animacion, 105);
+        			sprPortadas[j].draw(dibujadoPantalla);
+        			
+        			//Quitar el shader porque si no todo vale cola
+        			dibujadoPantalla.flush();
+        			dibujadoPantalla.end();
+            		dibujadoPantalla.setShader(null);
+
+                //Texto de sombra
+            		dibujadoPantalla.begin();
+            		
+            		//Dibujar borde texto
+            		for (int k = 0; k < 4; k++) {
+                		renderTexto.setText(
+                			texto, canciones.nombreCancion(j),
+                			new Color(0, 0, 0, 1f), Coord.RESOL_X,
+                			Align.center, false
+                		);
+                		texto.draw(
+                			dibujadoPantalla, renderTexto,
+                			posBarraX + (k / 2) * 4 - 2 + animacion,
+                			115 + (k % 2) * 4 + 2 + posTextY
+                		);
+            		}
+            		
+            		//Texto real
             		renderTexto.setText(
             			texto, canciones.nombreCancion(j),
-            			new Color(0, 0, 0, 1f), Coord.RESOL_X,
+            			new Color(1, 0.9f, 0.95f, 1), Coord.RESOL_X,
             			Align.center, false
             		);
             		texto.draw(
             			dibujadoPantalla, renderTexto,
-            			posBarraX + (k / 2) * 4 - 2 + animacion,
-            			115 + (k % 2) * 4 + 2 + posTextY
+            			posBarraX + animacion,
+            			120 + posTextY
             		);
+            		
+            		dibujadoPantalla.end();
         		}
-        		
-        		//Texto real
-        		renderTexto.setText(
-        			texto, canciones.nombreCancion(j),
-        			new Color(1, 0.9f, 0.95f, 1), Coord.RESOL_X,
-        			Align.center, false
-        		);
-        		texto.draw(
-        			dibujadoPantalla, renderTexto,
-        			posBarraX + animacion,
-        			120 + posTextY
-        		);
-        		
-        		dibujadoPantalla.end();
+        		//Botón añadir canción
+        		else {
+        			dibujadoPantalla.begin();
+        			
+        			//Botón añadir
+        			sprBotones.setRegion(300, 150, 150, 150);
+        			sprBotones.setSize(150,  150);
+        			sprBotones.setOrigin(75, 75);
+        			sprBotones.setCenter((i - 1) * 350 - 87.5f + animacion, 105);
+        			sprBotones.setScale(0.5f + 0.015f * animBrincos);
+        			sprBotones.draw(dibujadoPantalla);
+        			
+        			if (indice == j || relacionAnimAj != 0) {
+        				float opacidad = relacionAnimAj;
+        				if (indice == j) opacidad = 1;
+        				
+            			for (int k = 0; k < 4; k++) {
+                    		renderTexto.setText(
+                    			texto, "Añadir",
+                    			new Color(0, 0, 0, opacidad), Coord.RESOL_X,
+                    			Align.center, false
+                    		);
+                    		texto.draw(
+                    			dibujadoPantalla, renderTexto,
+                    			posBarraX + (k / 2) * 4 - 2 + animacion,
+                    			115 + (k % 2) * 4 + 2 + posTextY
+                    		);
+                		}
+                		
+                		//Texto real
+                		renderTexto.setText(
+                			texto, "Añadir",
+                			new Color(1, 0.9f, 0.95f, opacidad), Coord.RESOL_X,
+                			Align.center, false
+                		);
+                		texto.draw(
+                			dibujadoPantalla, renderTexto,
+                			posBarraX + animacion,
+                			120 + posTextY
+                		);
+        			}
+
+            		dibujadoPantalla.end();
+        		}
         }
         
         dibujadoPantalla.begin();
-
-		//Botón Izquierda
-		sprBotones.setRegion(0, 150, 150, 150);
-		sprBotones.setSize(300,  300);
-		sprBotones.setOrigin(150 + Coord.RESOL_X / 2, 150);
-		sprBotones.setPosition(-Coord.RESOL_X / 4 + 150 + animacion * .25f, -45);
-		sprBotones.setScale(0.5f + 0.015f * animBrincos);
-		sprBotones.draw(dibujadoPantalla);
-
-		//Botón Derecha
-		sprBotones.setRegion(150, 150, 150, 150);
-		sprBotones.setSize(300,  300);
-		sprBotones.setOrigin(150 - Coord.RESOL_X / 2, 150);
-		sprBotones.setPosition(Coord.RESOL_X + 150f / 4 + animacion * .25f, -45);
-		sprBotones.setScale(0.5f + 0.015f * animBrincos);
-		sprBotones.draw(dibujadoPantalla);
 		
 		//Botón inicio
-		if (mouse.dentroDe(Coord.RESOL_X / 2 - 30, Coord.RESOL_X / 2 + 30, 75, 135)) 	{
-			anim.animScaleEx();
-			animBoton = anim.getScaleEx() * .125f;
-			cursorEncima = true;
+		if (indice != canciones.size() - 1) {
+			if (mouse.dentroDe(Coord.RESOL_X / 2 - 30, Coord.RESOL_X / 2 + 30, 75, 135)) 	{
+				anim.animScaleEx();
+				animBoton = anim.getScaleEx() * .125f;
+				cursorEncima = true;
+			}
+			else animBoton = 0;
+			sprBotones.setRegion(0, 0, 150, 150);
+			sprBotones.setSize(150,  150);
+			sprBotones.setOrigin(75, 75);
+			sprBotones.setPosition(Coord.RESOL_X / 2 - 75, 30);
+			sprBotones.setScale(0.5f + 0.03f * animBrincos + animBoton);
+			sprBotones.draw(dibujadoPantalla);
+			
+			//Botón Editar
+			if (mouse.dentroDe(Coord.RESOL_X - 205, Coord.RESOL_X - 95, 200, 300)) 	{
+				anim.animScaleEx();
+				animBoton = anim.getScaleEx() * .1f;
+				cursorEncima = true;
+			}
+			else animBoton = 0;
+			sprBotones.setRegion(150, 0, 150, 150);
+			sprBotones.setSize(150,  150);
+			sprBotones.setOrigin(75, 75);
+			sprBotones.setPosition(Coord.RESOL_X - 225, 175);
+			sprBotones.setScale(0.9f + 0.02f * animBrincos + animBoton);
+			sprBotones.draw(dibujadoPantalla);
 		}
-		else animBoton = 0;
-		sprBotones.setRegion(0, 0, 150, 150);
-		sprBotones.setSize(150,  150);
-		sprBotones.setOrigin(75, 75);
-		sprBotones.setPosition(Coord.RESOL_X / 2 - 75, 30);
-		sprBotones.setScale(0.5f + 0.03f * animBrincos + animBoton);
-		sprBotones.draw(dibujadoPantalla);
 
-		//Botón Editar
-		if (mouse.dentroDe(Coord.RESOL_X - 205, Coord.RESOL_X - 95, 200, 300)) 	{
-			anim.animScaleEx();
-			animBoton = anim.getScaleEx() * .1f;
-			cursorEncima = true;
-		}
-		else animBoton = 0;
-		sprBotones.setRegion(150, 0, 150, 150);
-		sprBotones.setSize(150,  150);
-		sprBotones.setOrigin(75, 75);
-		sprBotones.setPosition(Coord.RESOL_X - 225, 175);
-		sprBotones.setScale(0.9f + 0.02f * animBrincos + animBoton);
-		sprBotones.draw(dibujadoPantalla);
+		//Si solo hay una rola
+		if (canciones.size() != 1) {
+			//Botón Aleatorio
+			if (mouse.dentroDe(95, 205, 200, 300)) {
+				anim.animScaleEx();
+				animBoton = anim.getScaleEx() * .1f;
+				cursorEncima = true;
+			}
+			else animBoton = 0;
+			sprBotones.setRegion(300, 0, 150, 150);
+			sprBotones.setSize(150,  150);
+			sprBotones.setOrigin(75, 75);
+			sprBotones.setPosition(75, 175);
+			sprBotones.setScale(0.9f + 0.02f * animBrincos + animBoton);
+			sprBotones.draw(dibujadoPantalla);
 
-		//Botón Aleatorio
-		if (mouse.dentroDe(95, 205, 200, 300)) {
-			anim.animScaleEx();
-			animBoton = anim.getScaleEx() * .1f;
-			cursorEncima = true;
+			//Botón Izquierda
+			sprBotones.setRegion(0, 150, 150, 150);
+			sprBotones.setSize(300,  300);
+			sprBotones.setOrigin(150 + Coord.RESOL_X / 2, 150);
+			sprBotones.setPosition(-Coord.RESOL_X / 4 + 150 + animacion * .25f, -45);
+			sprBotones.setScale(0.5f + 0.015f * animBrincos);
+			sprBotones.draw(dibujadoPantalla);
+
+			//Botón Derecha
+			sprBotones.setRegion(150, 150, 150, 150);
+			sprBotones.setSize(300,  300);
+			sprBotones.setOrigin(150 - Coord.RESOL_X / 2, 150);
+			sprBotones.setPosition(Coord.RESOL_X + 150f / 4 + animacion * .25f, -45);
+			sprBotones.setScale(0.5f + 0.015f * animBrincos);
+			sprBotones.draw(dibujadoPantalla);
 		}
-		else animBoton = 0;
-		sprBotones.setRegion(300, 0, 150, 150);
-		sprBotones.setSize(150,  150);
-		sprBotones.setOrigin(75, 75);
-		sprBotones.setPosition(75, 175);
-		sprBotones.setScale(0.9f + 0.02f * animBrincos + animBoton);
-		sprBotones.draw(dibujadoPantalla);
 		
 		if (!cursorEncima) anim.reiniciarScaleEx();
 		

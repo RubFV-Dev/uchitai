@@ -19,11 +19,21 @@ public class CancionesCargadas {
     private Sprite sprFondo;
     
     public String nombreCancion(int i) {
+		if (i >= 0 && i < canciones.length) {
     		return canciones[i].name();
+		}
+		else {
+			return "ANIADIR";
+		}
     }
     
     public String rutaCancion(int i) {
-    		return canciones[i].path();
+    		if (i >= 0 && i < canciones.length) {
+        		return canciones[i].path();
+    		}
+    		else {
+    			return "ANIADIR";
+    		}
     }
     
     public int size() {
@@ -43,13 +53,15 @@ public class CancionesCargadas {
     }
     
     public void cargarListaCanciones() {
-	    FileHandle directorio = Gdx.files.internal("../assets/canciones/");
+	    FileHandle directorio = Gdx.files.local("/canciones/");
 	    ArrayList<FileHandle> carpetas = new ArrayList<>();
+	    System.out.println(directorio.path());
 	    
 	    //Consigue las carpetas dentro del directorio canciones
 	    for (FileHandle actual : directorio.list()) {
 	    		if (actual.isDirectory()) {
 	    			FileHandle cancion = Gdx.files.internal(actual.path() + "/" + actual.name() + ".mp3");
+	    			System.out.println(actual.path() + "/" + actual.name() + ".mp3");
 	    			if (cancion.exists()) {
 			    		carpetas.add(actual);
 			    		System.out.println(actual.name());
@@ -58,10 +70,11 @@ public class CancionesCargadas {
 	    }
 	    
 	    //Se guarda en el array las direcciones para hacerlo más ágil :O
-	    canciones = new FileHandle[carpetas.size()];
+	    canciones = new FileHandle[carpetas.size() + 1];
 	    for (int i = 0; i < carpetas.size(); i++) {
 	    		canciones[i] = new FileHandle(carpetas.get(i).path());
 	    }
+	    canciones[carpetas.size()] = null;
     }
 
     public void antCancion() {
@@ -93,10 +106,10 @@ public class CancionesCargadas {
     // -1 para aleatorio
     public void cargarCancion(int i) {
 		UchitaiGame juego = (UchitaiGame)Gdx.app.getApplicationListener();
-	    if (i < 0 || i >= canciones.length) {
+	    if ((i < 0 || i >= canciones.length) && canciones.length > 1) {
 		    //Elige una canción al azar
 	    		do {
-	    		    i = new Random().nextInt(canciones.length);
+	    		    i = new Random().nextInt(canciones.length - 1);
 	    		} while (i == indiceCancionAct);
 	    }
 	    //Limpiar memory
@@ -107,34 +120,48 @@ public class CancionesCargadas {
 	    		txtFondo.dispose();
 	    }
 	    
-    		String ruta = canciones[i].path() + "/" + canciones[i].name();
-    		//Iniciar canción y poner fondo
-    		try {
-    			cancionActual = Gdx.audio.newMusic(Gdx.files.internal(ruta + ".mp3"));
-    			
-    			//cargar el fondo
-        		try {
-        		    txtFondo = new Texture(Gdx.files.internal(ruta + ".png"));
-	    	    }
-	    	    catch (Exception noFoto) {
-	    	    		// Esto no debería existir, pero lo dejo por flojo
-	    	    		Pixmap noFondo = new Pixmap(2, 2, Pixmap.Format.RGBA8888);
-	    	    		noFondo.setColor(new Color(0, 0, 0, 0));
-	    	    		noFondo.fill();
-	    	    		
-	    	    		txtFondo = new Texture(noFondo);
-	    	    		noFondo.dispose();
-	    	    }
-        		
+	    //Si existe el directorio o no es añadir canción
+	    if (i != -1 && canciones[i] != null) {
+	    		String ruta = canciones[i].path() + "/" + canciones[i].name();
+	    		//Iniciar canción y poner fondo
+	    		try {
+	    			cancionActual = Gdx.audio.newMusic(Gdx.files.internal(ruta + ".mp3"));
+	    			
+	    			//cargar el fondo
+	        		try {
+	        		    txtFondo = new Texture(Gdx.files.internal(ruta + ".png"));
+		    	    }
+		    	    catch (Exception noFoto) {
+		    	    		// Esto no debería existir, pero lo dejo por flojo
+		    	    		Pixmap noFondo = new Pixmap(2, 2, Pixmap.Format.RGBA8888);
+		    	    		noFondo.setColor(new Color(0, 0, 0, 0));
+		    	    		noFondo.fill();
+		    	    		
+		    	    		txtFondo = new Texture(noFondo);
+		    	    		noFondo.dispose();
+		    	    }
+	        		
+				sprFondo = new Sprite(txtFondo);
+	    		}
+	    		catch (Exception noSong) {
+	    			System.out.println("La cancion no existe, buu " + noSong.getMessage());
+	    			return;
+	    		}
+	
+	        cancionActual.setLooping(true);
+			cancionActual.play();
+	    }
+	    //Añadir canción
+	    else {
+		    	Pixmap noFondo = new Pixmap(2, 2, Pixmap.Format.RGBA8888);
+			noFondo.setColor(new Color(0.3984f, 0.13085f, 0.38475f, 1));
+			noFondo.fill();
+			
+			txtFondo = new Texture(noFondo);
 			sprFondo = new Sprite(txtFondo);
-    		}
-    		catch (Exception noSong) {
-    			System.out.println("La cancion no existe, buu " + noSong.getMessage());
-    			return;
-    		}
-
-        cancionActual.setLooping(true);
-		cancionActual.play();
+			noFondo.dispose();
+	    }
+	    
 		//Configurar imagen de fondo
 		//La imagen tiene un ratio menor o igual a 16:9
 		if (txtFondo.getWidth() / txtFondo.getHeight() <= Coord.RATIO) {
@@ -149,16 +176,21 @@ public class CancionesCargadas {
 			(Coord.RESOL_X - sprFondo.getWidth()) / 2, 
 			(Coord.RESOL_Y - sprFondo.getHeight()) / 2
 		);
-		
-		indiceCancionAct = i;
-
-		//Cargar en el juego el nuevo índice
+	    
+	    //Cargar en el juego el nuevo índice
 		DibujadoGeneral.cargarFondoCancion(sprFondo);
 		//Si está en la selección, recarga las portadas cargadas
 		if (juego.getDibujado() instanceof DibujadoSeleccion) {
 			DibujadoSeleccion sel = (DibujadoSeleccion)juego.getDibujado();
 			
 			sel.recargarTexturas();
+		}
+
+		if (i != -1) {
+			indiceCancionAct = i;
+		}
+		else {
+			indiceCancionAct = 0;
 		}
     }
     

@@ -30,14 +30,28 @@ public class InputGeneral extends InputAdapter {
 		
 		switch (juego.getPantallaAct()) {
 		case TITULO:
-			juego.setPantallaAct(PANTALLA.SELECCION);
+			if (keycode < Input.Keys.F1 || keycode > Input.Keys.F12) {
+				juego.setPantallaAct(PANTALLA.SELECCION);				
+			}
 			break;
 		case SELECCION:	
-			if (keycode == Input.Keys.LEFT) {
+			switch (keycode) {
+			case Input.Keys.LEFT:
 				juego.getCanciones().antCancion();
-			}
-			if (keycode == Input.Keys.RIGHT) {
+				break;
+				
+			case Input.Keys.RIGHT:
 				juego.getCanciones().sigCancion();
+				break;
+
+			case Input.Keys.SPACE:
+				juego.setPantallaAct(PANTALLA.JUEGO);
+				break;
+
+			case Input.Keys.SHIFT_LEFT:
+			case Input.Keys.SHIFT_RIGHT:
+				cancionAleatoria();
+				break;
 			}
 			break;
 		}
@@ -120,32 +134,7 @@ public class InputGeneral extends InputAdapter {
 				}
 				//Botón canción aleatoria
 				else if (mouse.dentroDe(95, 205, 200, 300)) {
-					DibujadoSeleccion dibujado = (DibujadoSeleccion)juego.getDibujado();
-					Random r = new Random();
-					int indiceOrg = juego.getCanciones().getIndiceCancion();
-					int indiceAct = -1;
-					
-					//Nuevo índice aleatorio
-					do {
-						indiceAct = r.nextInt(juego.getCanciones().size());
-					} while (indiceAct == indiceOrg);
-					
-					//Ajuste a la animación de cambio de canción
-					//El nuevo índice está más a la izquierda
-					if (indiceOrg > indiceAct) {
-						for (int i = indiceOrg - indiceAct; i > 0; i--) {
-							dibujado.anim.animDeslizarIzq();
-						}
-					}
-					//Está pa la derecha
-					else {
-						for (int i = indiceAct - indiceOrg; i > 0; i--) {
-							dibujado.anim.animDeslizarDer();
-						}
-					}
-					
-					//Cargar la nueva canción aleatoria
-					juego.getCanciones().cargarCancion(indiceAct);
+					cancionAleatoria();
 				}
 				else {
 					System.out.println("MOUSE: " + mouse.x + "\t" + mouse.y);
@@ -185,5 +174,37 @@ public class InputGeneral extends InputAdapter {
 		}
 		screenY = Coord.RESOL_Y - screenY;
 		mouse.setCoord(screenX, screenY);
+    }
+    
+    private void cancionAleatoria() {
+		UchitaiGame juego = (UchitaiGame)Gdx.app.getApplicationListener();
+		DibujadoSeleccion dibujado = (DibujadoSeleccion)juego.getDibujado();
+		Random r = new Random();
+		int indiceOrg = juego.getCanciones().getIndiceCancion();
+		int indiceAct = -1;
+		
+		if (juego.getCanciones().size() > 1) {
+			//Nuevo índice aleatorio
+			do {
+				indiceAct = r.nextInt(juego.getCanciones().size() - 1);
+			} while (indiceAct == indiceOrg);
+			
+			//Ajuste a la animación de cambio de canción
+			//El nuevo índice está más a la izquierda
+			if (indiceOrg > indiceAct) {
+				for (int i = indiceOrg - indiceAct; i > 0; i--) {
+					dibujado.anim.animDeslizarIzq();
+				}
+			}
+			//Está pa la derecha
+			else {
+				for (int i = indiceAct - indiceOrg; i > 0; i--) {
+					dibujado.anim.animDeslizarDer();
+				}
+			}
+			
+			//Cargar la nueva canción aleatoria
+			juego.getCanciones().cargarCancion(indiceAct);
+		}
     }
 }
