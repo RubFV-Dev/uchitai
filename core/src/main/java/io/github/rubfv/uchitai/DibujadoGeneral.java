@@ -9,6 +9,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 abstract public class DibujadoGeneral {
+	protected final static Coord TAM_TXT = new Coord(0.8f, 1);
     protected static SpriteBatch dibujadoPantalla = new SpriteBatch();
     protected static ShapeRenderer figurasPantalla = new ShapeRenderer();
     protected static int bmp;
@@ -44,5 +45,9 @@ abstract public class DibujadoGeneral {
     
     public boolean transCompletada() {
     		return true;
+    }
+    
+    public boolean estaBloqueado() {
+    		return false;
     }
 }

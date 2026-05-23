@@ -12,11 +12,18 @@ import com.badlogic.gdx.utils.ScreenUtils;
 
 public class DibujadoTitulo extends DibujadoGeneral {
 	protected class Transicion {
-		private static final int MAX_ANIM_TRANS = 80;
+		private static final int MAX_ANIM_TRANS = 40;
 		private float animTrans;
+		private boolean entrada;
 		
 		Transicion() {
 			animTrans = -1;
+			entrada = false;
+		}
+
+		Transicion(boolean entrada) {
+			animTrans = -1;
+			this.entrada = entrada;
 		}
 		
 		public void animar() {
@@ -111,6 +118,10 @@ public class DibujadoTitulo extends DibujadoGeneral {
         /*------ Dibujado Fondo -----*/
         dibujadoPantalla.begin();
         
+        sprFondo.setPosition(
+        		(Coord.RESOL_X - sprFondo.getWidth()) / 2+ mouse.x / Coord.RESOL_X * 10 - 5, 
+        		(Coord.RESOL_Y - sprFondo.getHeight()) / 2  + mouse.y / Coord.RESOL_Y * 10 - 5
+        	);
         sprFondo.draw(dibujadoPantalla);
         
         dibujadoPantalla.end();

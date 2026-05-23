@@ -28,32 +28,34 @@ public class InputGeneral extends InputAdapter {
 	public boolean keyDown(int keycode) {
 		UchitaiGame juego = (UchitaiGame)Gdx.app.getApplicationListener();
 		
-		switch (juego.getPantallaAct()) {
-		case TITULO:
-			if (keycode < Input.Keys.F1 || keycode > Input.Keys.F12) {
-				juego.setPantallaAct(PANTALLA.SELECCION);				
-			}
-			break;
-		case SELECCION:	
-			switch (keycode) {
-			case Input.Keys.LEFT:
-				juego.getCanciones().antCancion();
+		if (!juego.getDibujado().estaBloqueado()) {
+			switch (juego.getPantallaAct()) {
+			case TITULO:
+				if (keycode < Input.Keys.F1 || keycode > Input.Keys.F12) {
+					juego.setPantallaAct(PANTALLA.SELECCION);				
+				}
 				break;
-				
-			case Input.Keys.RIGHT:
-				juego.getCanciones().sigCancion();
-				break;
+			case SELECCION:	
+				switch (keycode) {
+				case Input.Keys.LEFT:
+					juego.getCanciones().antCancion();
+					break;
+					
+				case Input.Keys.RIGHT:
+					juego.getCanciones().sigCancion();
+					break;
 
-			case Input.Keys.SPACE:
-				juego.setPantallaAct(PANTALLA.JUEGO);
-				break;
+				case Input.Keys.SPACE:
+					juego.setPantallaAct(PANTALLA.JUEGO);
+					break;
 
-			case Input.Keys.SHIFT_LEFT:
-			case Input.Keys.SHIFT_RIGHT:
-				cancionAleatoria();
+				case Input.Keys.SHIFT_LEFT:
+				case Input.Keys.SHIFT_RIGHT:
+					cancionAleatoria();
+					break;
+				}
 				break;
 			}
-			break;
 		}
 		
 		if (keycode == Input.Keys.F5) {
@@ -109,40 +111,42 @@ public class InputGeneral extends InputAdapter {
 		UchitaiGame juego = (UchitaiGame)Gdx.app.getApplicationListener();
 		ajusteMouse(screenX, screenY);
 		
-		switch (button) {
-		case Input.Buttons.LEFT:
-			switch(juego.getPantallaAct()) {
-			case TITULO:
-				juego.setPantallaAct(PANTALLA.SELECCION);
-				return true;
-			case SELECCION:
-				//Detectar selección anterior canción
-				if (mouse.dentroDe(180, Coord.RESOL_X / 2 - 255, 30, 180)) {
-					juego.getCanciones().antCancion();
+		if (!juego.getDibujado().estaBloqueado()) {
+			switch (button) {
+			case Input.Buttons.LEFT:
+				switch(juego.getPantallaAct()) {
+				case TITULO:
+					juego.setPantallaAct(PANTALLA.SELECCION);
+					return true;
+				case SELECCION:
+					//Detectar selección anterior canción
+					if (mouse.dentroDe(180, Coord.RESOL_X / 2 - 255, 30, 180)) {
+						juego.getCanciones().antCancion();
+					}
+					//Detectar selección aiguiente canción
+					else if (mouse.dentroDe(Coord.RESOL_X / 2 + 255, Coord.RESOL_X - 180, 30, 180)) {
+						juego.getCanciones().sigCancion();
+					}
+					//Botón inicio canción
+					else if (mouse.dentroDe(Coord.RESOL_X / 2 - 30, Coord.RESOL_X / 2 + 30, 75, 135)) {
+						juego.setPantallaAct(PANTALLA.JUEGO);
+					}
+					//Botón edición mapa
+					else if (mouse.dentroDe(Coord.RESOL_X - 205, Coord.RESOL_X - 95, 200, 300)) {
+						juego.setPantallaAct(PANTALLA.EDICION);
+					}
+					//Botón canción aleatoria
+					else if (mouse.dentroDe(95, 205, 200, 300)) {
+						cancionAleatoria();
+					}
+					else {
+						System.out.println("MOUSE: " + mouse.x + "\t" + mouse.y);
+						System.out.println("SCRR: " + Gdx.graphics.getWidth() + "\t" + Gdx.graphics.getHeight());
+					}
+					return true;
 				}
-				//Detectar selección aiguiente canción
-				else if (mouse.dentroDe(Coord.RESOL_X / 2 + 255, Coord.RESOL_X - 180, 30, 180)) {
-					juego.getCanciones().sigCancion();
-				}
-				//Botón inicio canción
-				else if (mouse.dentroDe(Coord.RESOL_X / 2 - 30, Coord.RESOL_X / 2 + 30, 75, 135)) {
-					juego.setPantallaAct(PANTALLA.JUEGO);
-				}
-				//Botón edición mapa
-				else if (mouse.dentroDe(Coord.RESOL_X - 205, Coord.RESOL_X - 95, 200, 300)) {
-					juego.setPantallaAct(PANTALLA.EDICION);
-				}
-				//Botón canción aleatoria
-				else if (mouse.dentroDe(95, 205, 200, 300)) {
-					cancionAleatoria();
-				}
-				else {
-					System.out.println("MOUSE: " + mouse.x + "\t" + mouse.y);
-					System.out.println("SCRR: " + Gdx.graphics.getWidth() + "\t" + Gdx.graphics.getHeight());
-				}
-				return true;
+				break;
 			}
-			break;
 		}
 
         return false;
@@ -173,6 +177,12 @@ public class InputGeneral extends InputAdapter {
 			screenY *= scale.y;
 		}
 		screenY = Coord.RESOL_Y - screenY;
+		
+		if (screenX > Coord.RESOL_X) screenX = Coord.RESOL_X;
+		if (screenX < 0)				screenX = 0;
+		if (screenY > Coord.RESOL_Y) screenY = Coord.RESOL_Y;
+		if (screenY < 0)				screenY = 0;
+		
 		mouse.setCoord(screenX, screenY);
     }
     
