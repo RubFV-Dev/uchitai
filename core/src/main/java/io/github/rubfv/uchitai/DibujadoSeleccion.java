@@ -1,6 +1,7 @@
 package io.github.rubfv.uchitai;
 
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.logging.FileHandler;
 
 import com.badlogic.gdx.Gdx;
@@ -21,10 +22,10 @@ import com.badlogic.gdx.utils.ScreenUtils;
 
 public class DibujadoSeleccion extends DibujadoGeneral {	
 	protected class Transicion {
-		private static final int MAX_ANIM_TRANS = 25;
-		private static final int MAX_TIEMPO_EX = 120;
-		private static final float FIN_TRANSICION = 0.0025f;
-		private static final float VEL_TRANSICION = 1.21875f;
+		private final int MAX_ANIM_TRANS = 25;
+		private final int MAX_TIEMPO_EX = 120;
+		private final float FIN_TRANSICION = 0.0025f;
+		private final float VEL_TRANSICION = 1.21875f;
 		private float animTrans;
 		private int tiempoEx;
 		private boolean entrada;
@@ -78,6 +79,12 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 				return 0;
 			}
 			return (float) (MAX_ANIM_TRANS - animTrans) / MAX_ANIM_TRANS;
+		}
+		
+		public float relacionAnimEspera(int rangoSup, int rangoInf) {
+			if (tiempoEx == -1 || tiempoEx > MAX_TIEMPO_EX - rangoInf) return 0;
+			if (tiempoEx < MAX_TIEMPO_EX - rangoSup) return 1;
+			return (float)(MAX_TIEMPO_EX - rangoInf - tiempoEx) / (rangoSup - rangoInf);
 		}
 		
 		public boolean esEntrada() {
@@ -179,6 +186,8 @@ public class DibujadoSeleccion extends DibujadoGeneral {
     			);
     		}
     };
+    
+    protected final Coord TAM_PORTADA_BARRA = new Coord(430, 150);
     
     protected Texture txtTitulo, txtKanji, txtShaderFondo, txtBotones;
     protected Sprite sprTitulo, sprKanji, sprBotones;
@@ -284,8 +293,8 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 		        		
 		        		txtPortadas[j] = (textura);
 		        		//Imagen reescalada para caber en el selector
-		        		escala.x = 430f / textura.getWidth();
-		        		escala.y = 150f / textura.getHeight();
+		        		escala.x = TAM_PORTADA_BARRA.x / textura.getWidth();
+		        		escala.y = TAM_PORTADA_BARRA.y / textura.getHeight();
 		        		sprite = new Sprite(textura);
 		        		//Resol 2:1
 		        		sprite.setRegion(0, textura.getHeight() / 4, textura.getWidth(), textura.getHeight() / 2);
@@ -412,6 +421,23 @@ public class DibujadoSeleccion extends DibujadoGeneral {
             		0, 30 + trans.relacionAnim() * 75,
             		Coord.RESOL_X, 150 * transTransparencia
             	);
+            
+            if (trans.relacionAnimEspera(20, 0) > 0) {
+	            	figurasPantalla.set(ShapeType.Filled);
+	            figurasPantalla.setColor(new Color(0.05f, 0f, 0.075f, 0.25f));
+	            figurasPantalla.rect(
+	            		0, (Coord.RESOL_Y - 300f) / 2,
+	            		trans.relacionAnimEspera(20, 0) * (float) Coord.RESOL_X, 300f
+	            	);
+            }
+            if (trans.relacionAnimEspera(45, 25) > 0) {
+	            	figurasPantalla.set(ShapeType.Filled);
+	            	figurasPantalla.setColor(new Color(0.05f, 0f, 0.075f, 0.25f));
+	            figurasPantalla.rect(
+	            		0, (Coord.RESOL_Y - 300f) / 2 - 200f,
+	            		trans.relacionAnimEspera(45, 25) * (float) Coord.RESOL_X, 80f
+	            	);
+	        }
         }
         
         figurasPantalla.end();
@@ -446,13 +472,38 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 	        	figurasPantalla.begin();
 	
             figurasPantalla.set(ShapeType.Filled);
-            figurasPantalla.setColor(new Color(0.05f, 0f, 0.075f, 0.85f));
+            figurasPantalla.setColor(new Color(0f, 0f, 0f, 0.65f));
             figurasPantalla.rect(0, 0, Coord.RESOL_X, Coord.RESOL_Y * trans.relacionAnim());
 	            
             figurasPantalla.end();
             
             //Desactiva el blend
             Gdx.gl.glDisable(GL20.GL_BLEND);
+            
+            //Texto mejor puntuación
+            if (trans.relacionAnimEspera(45, 25) > 0) {
+	    			Coord txtOrg = new Coord(texto.getScaleX(), texto.getScaleY());
+	    			
+	    			texto.getData().scaleX = TAM_TXT.x;
+	    			texto.getData().scaleY = TAM_TXT.y;
+
+	    			//Placeholder, 1989 debería ser la mejor puntuación
+            		dibujadoPantalla.begin();
+	    			renderTexto.setText(
+	        			texto, "Mejor Puntuación: " + 1989,
+	        			new Color(1f, 1f, 1f, 1f), Coord.RESOL_X,
+	        			Align.center, false
+	            	);
+	        		texto.draw(
+	        			dibujadoPantalla, renderTexto,
+	        			-Coord.RESOL_X * (1f - trans.relacionAnimEspera(45, 25)),
+	        			(Coord.RESOL_Y - 300f) / 2 - 145f
+	        		);
+            		dibujadoPantalla.end();
+	        		
+	        		texto.getData().scaleX = txtOrg.x;
+	        		texto.getData().scaleY = txtOrg.y;
+	        }
         }
         
         //Dibujado canciones visibles
@@ -501,7 +552,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
             		}
             		//Transición Salida
             		else if (transSalida) {
-            			//Se achican de vuelta
+            			//Se achican de vuelta cualquiera que no sea la seleccionada
             			if (indice != j) {
                 			Coord escalaOrg = new Coord(sprPortadas[j].getScaleX(), sprPortadas[j].getScaleY());
                 			sprPortadas[j].setScale(escalaOrg.x, escalaOrg.y * (1f - transCoord.y));		//Animación entrada
@@ -509,7 +560,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
                 			sprPortadas[j].draw(dibujadoPantalla);
                 			sprPortadas[j].setScale(escalaOrg.x, escalaOrg.y);
             			}
-            			//se agranda y se centra
+            			//se agranda y se centra la canción seleccionada
             			else {
                 			Coord escalaOrg = new Coord(sprPortadas[j].getScaleX(), sprPortadas[j].getScaleY());
                 			sprPortadas[j].setScale(escalaOrg.x * transCoord.y * 2, escalaOrg.y * transCoord.y * 2);		//Animación salidaaanga
@@ -592,6 +643,10 @@ public class DibujadoSeleccion extends DibujadoGeneral {
         					(indice != canciones.size() - 1 && anim.relacionAnim() > 0)) {
         					opacidad = 0;
         				}
+
+            			if (transSalida) {		//Animación encogerse así bien cura
+            				texto.getData().scaleY = TAM_TXT.y * transTransparencia;
+            			}
         				
         				//Dibujado sombra texto
             			for (int k = 0; k < 4; k++) {
@@ -618,6 +673,10 @@ public class DibujadoSeleccion extends DibujadoGeneral {
                 			posBarraX + animacion,
                 			120 + posTextY
                 		);
+                		
+                		if (transSalida) {		//Recupera el tamaño originalal
+            				texto.getData().scaleY = TAM_TXT.y;
+            			}
         			}
 
             		dibujadoPantalla.end();
@@ -760,6 +819,9 @@ public class DibujadoSeleccion extends DibujadoGeneral {
     @Override
     public boolean transCompletada() {
     		trans.animar();
+    		if (!trans.esEntrada() && trans.relacionAnimEspera(120, 0) > 0) {
+    			canciones.getCancionActual().setVolume(1f - trans.relacionAnimEspera(120, 0));
+    		}
 		return trans.completado();
     }
     
