@@ -6,47 +6,49 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputProcessor;
-import io.github.rubfv.uchitai.UchitaiGame;
+
+import static io.github.rubfv.uchitai.PANTALLA.JUEGO;
+
 
 public class InputGeneral extends InputAdapter {
-	
+
 	private PANTALLA pantallaAct;
 	private Coord mouse;
-	
+
 	InputGeneral(PANTALLA p, Coord m) {
 		super();
 		pantallaAct = p;
 		mouse = m;
 	}
-	
+
 	public void setPantallaAct(PANTALLA pantalla) {
 		pantallaAct = pantalla;
 	}
-	
+
 	//Esta función SIEMPRE se llamará al presionar una tecla
 	@Override
 	public boolean keyDown(int keycode) {
 		UchitaiGame juego = (UchitaiGame)Gdx.app.getApplicationListener();
-		
+
 		if (!juego.getDibujado().estaBloqueado()) {
 			switch (juego.getPantallaAct()) {
 			case TITULO:
 				if (keycode < Input.Keys.F1 || keycode > Input.Keys.F12) {
-					juego.setPantallaAct(PANTALLA.SELECCION);				
+					juego.setPantallaAct(PANTALLA.SELECCION);
 				}
 				break;
-			case SELECCION:	
+			case SELECCION:
 				switch (keycode) {
 				case Input.Keys.LEFT:
 					juego.getCanciones().antCancion();
 					break;
-					
+
 				case Input.Keys.RIGHT:
 					juego.getCanciones().sigCancion();
 					break;
 
 				case Input.Keys.SPACE:
-					juego.setPantallaAct(PANTALLA.JUEGO);
+					juego.setPantallaAct(JUEGO);
 					break;
 
 				case Input.Keys.SHIFT_LEFT:
@@ -55,9 +57,18 @@ public class InputGeneral extends InputAdapter {
 					break;
 				}
 				break;
+
+                case JUEGO:
+                    if(keycode >= Input.Keys.A && keycode <= Input.Keys.Z){
+                        if(juego.getGestorPartida() != null){
+                            juego.getGestorPartida().procesarTeclaPresionada(keycode);
+                        }
+                    }
+                    break;
+
 			}
 		}
-		
+
 		if (keycode == Input.Keys.F5) {
 			if (!Gdx.graphics.isFullscreen()) {
 				Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
@@ -66,51 +77,62 @@ public class InputGeneral extends InputAdapter {
 				Gdx.graphics.setWindowedMode(1280, 720);
 			}
 		}
-		
+
 		if (keycode == Input.Keys.ESCAPE) {
 			Gdx.app.exit();
 		}
-		
+
 		//para conocer las canciones actualmente cargadas
 		if (keycode == Input.Keys.ALT_LEFT) {
 			for (int i = 0; i < juego.getCanciones().size(); i++) {
 				System.out.println(juego.getCanciones().nombreCancion(i));
 			}
 		}
-		
+
+        //De aqui si se presiona cualquier tecla del teclado basico y se esta en la pamntalla juego
+        // entonces se manda a la clase que gestiona el juego el keyCode de la tecla presionada
 		return false;
 	}
 
 	@Override
 	public boolean keyUp(int keycode) {
-		
-		return false;
+        UchitaiGame juego = (UchitaiGame) Gdx.app.getApplicationListener();
+
+        //para cuando se este en el juego y el usuario suelte la tecla (para notas sostenidas)
+        if(juego.getPantallaAct() == JUEGO){
+            if(keycode >= Input.Keys.A && keycode <= Input.Keys.Z){
+                if(juego.getGestorPartida() != null){
+                    juego.getGestorPartida().procesarTeclaArriba(keycode);
+                }
+            }
+        }
+        return false;
 	}
 
 	@Override
 	public boolean keyTyped(char character) {
-		
+
 		return false;
 	}
-	
+
 	@Override
 	public boolean mouseMoved(int screenX, int screenY) {
 		ajusteMouse(screenX, screenY);
 		return false;
 	}
-	
+
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
 		ajusteMouse(screenX, screenY);
-		
+
 		return false;
 	}
-	
+
 	@Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 		UchitaiGame juego = (UchitaiGame)Gdx.app.getApplicationListener();
 		ajusteMouse(screenX, screenY);
-		
+
 		if (!juego.getDibujado().estaBloqueado()) {
 			switch (button) {
 			case Input.Buttons.LEFT:
@@ -129,7 +151,7 @@ public class InputGeneral extends InputAdapter {
 					}
 					//Botón inicio canción
 					else if (mouse.dentroDe(Coord.RESOL_X / 2 - 30, Coord.RESOL_X / 2 + 30, 75, 135)) {
-						juego.setPantallaAct(PANTALLA.JUEGO);
+						juego.setPantallaAct(JUEGO);
 					}
 					//Botón edición mapa
 					else if (mouse.dentroDe(Coord.RESOL_X - 205, Coord.RESOL_X - 95, 200, 300)) {
@@ -151,16 +173,16 @@ public class InputGeneral extends InputAdapter {
 
         return false;
     }
-	
+
     public void ajusteMouse(int screenX, int screenY) {
 		Coord scale = new Coord(), ajuste = new Coord();
-		
+
 		scale.y = ((float)Coord.RESOL_Y / (float)Gdx.graphics.getHeight());
 		scale.x = ((float)Coord.RESOL_X / (float)Gdx.graphics.getWidth());
-		
+
 		ajuste.x = (Gdx.graphics.getWidth() * scale.y - Gdx.graphics.getWidth() * scale.x) / 2;
 		ajuste.y = (Gdx.graphics.getHeight() * scale.x - Gdx.graphics.getHeight() * scale.y) / 2;
-		
+
 		//Ajuste de resolución porque es un dolor de cocos
 		if (ajuste.x > 0) {
 			screenX *= scale.y;
@@ -177,28 +199,28 @@ public class InputGeneral extends InputAdapter {
 			screenY *= scale.y;
 		}
 		screenY = Coord.RESOL_Y - screenY;
-		
+
 		if (screenX > Coord.RESOL_X) screenX = Coord.RESOL_X;
 		if (screenX < 0)				screenX = 0;
 		if (screenY > Coord.RESOL_Y) screenY = Coord.RESOL_Y;
 		if (screenY < 0)				screenY = 0;
-		
+
 		mouse.setCoord(screenX, screenY);
     }
-    
+
     private void cancionAleatoria() {
 		UchitaiGame juego = (UchitaiGame)Gdx.app.getApplicationListener();
 		DibujadoSeleccion dibujado = (DibujadoSeleccion)juego.getDibujado();
 		Random r = new Random();
 		int indiceOrg = juego.getCanciones().getIndiceCancion();
 		int indiceAct = -1;
-		
+
 		if (juego.getCanciones().size() > 1) {
 			//Nuevo índice aleatorio
 			do {
 				indiceAct = r.nextInt(juego.getCanciones().size() - 1);
 			} while (indiceAct == indiceOrg);
-			
+
 			//Ajuste a la animación de cambio de canción
 			//El nuevo índice está más a la izquierda
 			if (indiceOrg > indiceAct) {
@@ -212,7 +234,7 @@ public class InputGeneral extends InputAdapter {
 					dibujado.anim.animDeslizarDer();
 				}
 			}
-			
+
 			//Cargar la nueva canción aleatoria
 			juego.getCanciones().cargarCancion(indiceAct);
 		}
