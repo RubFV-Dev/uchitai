@@ -1,6 +1,5 @@
 package io.github.rubfv.uchitai;
 import com.badlogic.gdx.audio.Music;
-
 import java.util.*;
 
 
@@ -36,7 +35,7 @@ public class GestorJuego {
         acertada=0;
         notasTecla=level.estructuraJuego();
         sostenidasProceso=new HashMap<>();
-         musicaActual = musica;
+        musicaActual = musica;
     }
 
     public void juego(){}
@@ -161,6 +160,7 @@ public class GestorJuego {
             temporizador = 0;
             musicaActual.stop();
             musicaActual.play();
+            musicaActual.setVolume(1);
             juegoEstado = true;
         }
     }
@@ -225,4 +225,11 @@ public class GestorJuego {
         fallo++;        //vida
     }
 
+    public float getRelacionVida() {
+    		return (float)fallo / 14;
+    }
+    
+    public float getRelacionTiempo() {
+    		return (float)musicaActual.getPosition();
+    }
 }

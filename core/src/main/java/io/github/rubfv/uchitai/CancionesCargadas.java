@@ -148,8 +148,8 @@ public class CancionesCargadas {
 	    			return;
 	    		}
 	
+	        cancionActual.setLooping(true);
 			cancionActual.play();
-			cancionActual.setLooping(true);
 	    }
 	    //Añadir canción
 	    else {

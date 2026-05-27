@@ -11,6 +11,9 @@ public class Nivel implements Serializable {
     private TreeMap<Long,List<Nota>> notas;
 
     // Todo CONSTRUCTOR (RUBÉN)
+    Nivel() {
+    		notas = new TreeMap<>();
+    }
 
     public String getNombreCancion() {
         return nombreCancion;

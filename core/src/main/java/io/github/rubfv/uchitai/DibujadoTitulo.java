@@ -12,9 +12,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 
 public class DibujadoTitulo extends DibujadoGeneral {
 	protected class Transicion {
-		private final int MAX_ANIM_TRANS = 1;
-		private final float FIN_TRANSICION = 0.0025f;
-		private final float VEL_TRANSICION = 1.21875f;
+		private static final int MAX_ANIM_TRANS = 40;
 		private float animTrans;
 		private boolean entrada;
 		
@@ -33,10 +31,10 @@ public class DibujadoTitulo extends DibujadoGeneral {
 				animTrans = MAX_ANIM_TRANS;
 			}
 			else {
-				animTrans /= VEL_TRANSICION;		//Mover
+				animTrans /= 1.125;		//Mover
 				
 				//Detener animación
-				if (animTrans <= FIN_TRANSICION) {
+				if (animTrans <= 1) {
 					animTrans = 0;
 				}
 			}
@@ -251,5 +249,10 @@ public class DibujadoTitulo extends DibujadoGeneral {
     public boolean transCompletada() {
     		trans.animar();
 		return trans.completado();
+    }
+    
+    @Override
+    public boolean estaBloqueado() {
+    		return trans.relacionAnim() != 0;
     }
 }

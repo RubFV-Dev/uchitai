@@ -11,12 +11,17 @@ import static io.github.rubfv.uchitai.PANTALLA.JUEGO;
 
 
 public class InputGeneral extends InputAdapter {
-
+	protected final int CANT_TECLAS = 26;
 	private PANTALLA pantallaAct;
 	private Coord mouse;
+    protected boolean[] teclas;
 
 	InputGeneral(PANTALLA p, Coord m) {
 		super();
+		teclas = new boolean[CANT_TECLAS];
+		for (int i = 0; i < CANT_TECLAS; i++) {
+			teclas[i] = false;
+		}
 		pantallaAct = p;
 		mouse = m;
 	}
@@ -29,6 +34,11 @@ public class InputGeneral extends InputAdapter {
 	@Override
 	public boolean keyDown(int keycode) {
 		UchitaiGame juego = (UchitaiGame)Gdx.app.getApplicationListener();
+		
+		//Mostrar que se tecleaba
+		if (keycode >= Input.Keys.A && keycode <= Input.Keys.Z) {
+			teclas[keycode - Input.Keys.A] = true;
+		}
 
 		if (!juego.getDibujado().estaBloqueado()) {
 			switch (juego.getPantallaAct()) {
@@ -58,13 +68,19 @@ public class InputGeneral extends InputAdapter {
 				}
 				break;
 
-                case JUEGO:
-                    if(keycode >= Input.Keys.A && keycode <= Input.Keys.Z){
+            case JUEGO:
+                switch (keycode) {
+                default: 
+                    if (keycode >= Input.Keys.A && keycode <= Input.Keys.Z) {
                         if(juego.getGestorPartida() != null){
                             juego.getGestorPartida().procesarTeclaPresionada(keycode);
                         }
                     }
                     break;
+                case Input.Keys.ENTER:
+                		break;
+                }
+                break;
 
 			}
 		}
@@ -97,6 +113,11 @@ public class InputGeneral extends InputAdapter {
 	@Override
 	public boolean keyUp(int keycode) {
         UchitaiGame juego = (UchitaiGame) Gdx.app.getApplicationListener();
+        
+        //Mostrar que se tecleaba
+  		if (keycode >= Input.Keys.A && keycode <= Input.Keys.Z) {
+  			teclas[keycode - Input.Keys.A] = false;
+  		}
 
         //para cuando se este en el juego y el usuario suelte la tecla (para notas sostenidas)
         if(juego.getPantallaAct() == JUEGO){
@@ -239,4 +260,8 @@ public class InputGeneral extends InputAdapter {
 			juego.getCanciones().cargarCancion(indiceAct);
 		}
     }
+    
+	public boolean teclaPresionada(int indice) {
+		return teclas[indice];
+	}
 }

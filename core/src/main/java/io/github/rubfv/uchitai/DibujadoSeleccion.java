@@ -464,7 +464,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
         
         //Oscurecer pantalla. Transición a salida
         if (transSalida) {
-        		//Activa el blanding de la imagen
+        		//Activa el blending de la imagen
         		//(real, juro saber qué es esto, ya me he peleado con esta cochinada en Allegro)
         		Gdx.gl.glEnable(GL20.GL_BLEND);
             Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
@@ -686,25 +686,28 @@ public class DibujadoSeleccion extends DibujadoGeneral {
         dibujadoPantalla.begin();
 
         //Transición a transparencia
-		if (transEntrada) {
-			sprBotones.setAlpha(trans.relacionAnim());
-		}
-		//está en el botón de añadir
-		else if (indice == canciones.size() - 1 && relacionAnimAj == 0) {
-			sprBotones.setAlpha(0);
-		}
-		//LLega al botón de añadir
-		else if ((indice == canciones.size() - 1 && anim.relacionAnim() > 0)) {
-			sprBotones.setAlpha(relacionAnimAj);
-		}
-		//Se va del boing de añadir :,(
-		else if ((indice == canciones.size() - 2 && anim.relacionAnim() < 0)) {
-			sprBotones.setAlpha(1f - relacionAnimAj);
-		}
-		//Siempre mostrar los botongos
-		else {
-			sprBotones.setAlpha(1);
-		}
+        if (canciones.size() != 1) {
+	    		if (transEntrada) {
+	    			sprBotones.setAlpha(trans.relacionAnim());
+	    		}
+	    		//está en el botón de añadir
+	    		else if (indice == canciones.size() - 1 && relacionAnimAj == 0) {
+	    			sprBotones.setAlpha(0);
+	    		}
+	    		//LLega al botón de añadir
+	    		else if ((indice == canciones.size() - 1 && anim.relacionAnim() > 0)) {
+	    			sprBotones.setAlpha(relacionAnimAj);
+	    		}
+	    		//Se va del boing de añadir :,(
+	    		else if ((indice == canciones.size() - 2 && anim.relacionAnim() < 0)) {
+	    			sprBotones.setAlpha(1f - relacionAnimAj);
+	    		}
+	    		//Siempre mostrar los botongos
+	    		else {
+	    			sprBotones.setAlpha(1);
+	    		}
+        }
+        else sprBotones.setAlpha(0);
 		
 		//Botón inicio
 		//animación de cuando se le acerca el mouse
@@ -724,6 +727,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 			sprBotones.setScale(sprBotones.getScaleX(), sprBotones.getScaleY() * transTransparencia);
 		}
 		sprBotones.draw(dibujadoPantalla);
+		sprBotones.setAlpha(1);
 		
 		//Animación desvanecido
 		if (transSalida) {		
