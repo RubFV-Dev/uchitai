@@ -5,4 +5,7 @@ public class NotaSimple extends Nota{
     //Nada de variables nuevas
     // Todo CONSTRUCTOR (RUBÉN)
 
+	NotaSimple(){
+		
+	}
 }

@@ -8,21 +8,26 @@ import com.badlogic.gdx.Input;
 //de bytes y no de problemas :)
 public abstract class Nota implements Serializable {
     protected Integer tecla;               //Key code de la tecla de acuerdo al Libgdx
-    protected long tiempoInicio;      //El tiempo/momento en que debe ser presionada
-    protected int aparece;     //milisegundos antes de que se deba teclear(para aparecer la tecla)
+    protected float tiempoInicio;      //El tiempo/momento en que debe ser presionada segundos
+    protected float aparece;     //milisegundos antes de que se deba teclear(para aparecer la tecla)
 
     // Todo CONSTRUCTOR (RUBÉN)
-    Nota() {
-    		tecla = 0;
+    Nota(int keycode) {
+    		tecla = keycode;
     		tiempoInicio = 0;
-    		aparece = 100;
+    		aparece = 0.1f;
     }
+    Nota() {
+		tecla = -1;
+		tiempoInicio = 0;
+		aparece = 0.1f;
+}
 
     public Integer getTecla() {
         return tecla;
     }
 
-    public long getTiempoInicio() {
+    public float getTiempoInicio() {
         return tiempoInicio;
     }
 

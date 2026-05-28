@@ -5,6 +5,9 @@ import java.util.*;
 
 //Encargado de manejar la lógica del juego.
 public class GestorJuego {
+	
+	protected final int MAX_FALLOS = 15;
+	
     protected Nivel nivelAct;             //como tal all the level
     //Mapa (Keycode, cola de tiempos por tecla) Reordenar para separar por teclas
     //de esta forma sera más facil de manejar
@@ -12,24 +15,24 @@ public class GestorJuego {
     protected HashMap<Integer,NotaSostenida> sostenidasProceso;   //para tener un lugar para guarda las notas que
                                                     // sabemos que estan sostenidas en ese momento
     protected Music musicaActual;
-    protected long temporizador;          //A emplear Gdx.graphics.getDeltaTime(); Este es nuestro reloj interno
+    protected float tiempoAct;          //A emplear el calculo de la musica Perdon no me acuerdo, Este es nuestro reloj interno
     protected boolean juegoEstado;          //pa saber si esta en pausa o no (pendiente de confirmar)
     protected int puntaje;
     protected int combo;                  //El combo es un multiplicador de los puntos
     protected int numFallos;              //contador de fallos
-    protected long margenError=100;      //los milisegundos que estan permitidos para desfasarse del presionar
+    protected float margenError= 0.1f;      //los milisegundos que estan permitidos para desfasarse del presionar
     protected int fallo;                  //contador de fallos (fallos maximos 14)
     protected int medioFallo;           //contador medio fallo
     protected int acertada;             //contador acertada
     //todo progreso aun no se
 
-     GestorJuego(Nivel level, Music musica){
-        nivelAct=level;
-        temporizador=0;
+     GestorJuego(Nivel level, Music musica){		//El nivel lo recibe, por ende RODRIGO, a la hora de entrar al nivel debe de 
+        nivelAct=level;							//pasarle la estructura ya extraida del archivo 
+        tiempoAct=0;
         juegoEstado=true;
         puntaje=0;
         combo=0;
-        numFallos=0;
+        numFallos=0; 
         fallo=0;
         medioFallo=0;
         acertada=0;
@@ -37,8 +40,6 @@ public class GestorJuego {
         sostenidasProceso=new HashMap<>();
         musicaActual = musica;
     }
-
-    public void juego(){}
 
     // NOTA: Tecnicamente se usa polleo en cada render de las cosas por asi decirlo
 
@@ -61,10 +62,10 @@ public class GestorJuego {
         // Ya que comprobamos que la tecla si puede ser presionada pasamos a checar si si debia ser presionada
         Nota notaProx =notasTecla.get(keycode).peek();
 
-        long tempoAct= temporizador;
-        long desfase= Math.abs(notaProx.getTiempoInicio()- tempoAct);     //todo CONSTRUCTOR EN NOTA
+        float tempoAct= tiempoAct;
+        float desfase= Math.abs(notaProx.getTiempoInicio()- tempoAct);     //todo CONSTRUCTOR EN NOTA
 
-        if(desfase <=margenError){  //para notas que se presionan correctamente
+        if(desfase <= margenError){  //para notas que se presionan correctamente
             if(notaProx.isSostenida()){
                 NotaSostenida notitaSos = (NotaSostenida) notaProx;
                 notitaSos.setInicioAcertado(true);
@@ -78,7 +79,7 @@ public class GestorJuego {
                 acertada++;
             }
         }
-        else if(temporizador < notaProx.getTiempoInicio()-margenError){
+        else if(tiempoAct < notaProx.getTiempoInicio()-margenError){
             // se presiona antes de tiempo
             notaOlvidada();     //para que le de el fallo
         }
@@ -95,9 +96,9 @@ public class GestorJuego {
             return;
         }
 
-        long tempoAct= temporizador; // para no modificar el temporizador
+        float tempoAct = tiempoAct; // para no modificar el temporizador
         if(notaProx.isInicioAcertado()){    //si inicio cuando era debido
-            long desfase= Math.abs(tempoAct-notaProx.getTiempoFinal());
+            float desfase= Math.abs(tempoAct-notaProx.getTiempoFinal());
             if(desfase<=margenError){
                 incrementarPuntaje(desfase, true);  //para que le de la otra mitad de puntos
                 acertada++;
@@ -111,7 +112,7 @@ public class GestorJuego {
                 if (puntaje < 0) puntaje = 0;
             }
             //verificacion por si acaso
-            if(!notasTecla.isEmpty()) {
+            if(!notasTecla.isEmpty() && notasTecla !=null) {
                 notasTecla.get(keycode).poll();     // así se libera de su cola
             }
         }
@@ -120,17 +121,17 @@ public class GestorJuego {
 
     //Metodo para poleo
     //Como este es de poleo aqui gestionara el momento para llamar al perder (pendiente fin de juego)
-    public boolean limpieza(float tiempo){     // A USAR DELTATIME
+    public boolean limpieza(){ 
         // Plan: Metodo encargado de las teclas que se olvidan osea no se presionan, este sera continuo
         // de cierta forma, lo ideal es que cada que avance el tiempo se llame al metodo
         // este verifica las colas de todas las notas y si no estan dentro del margen entonces las elimina
         if(!juegoEstado) return false;
 
-        temporizador += (long) tiempo * 1000;      //Aquí actualizamos el tiempo ya que esta se ejecuta en cada ciclo
+        tiempoAct = getRelacionTiempo();      //Aquí actualizamos el tiempo ya que esta se ejecuta en cada ciclo
 
         //recorremos cada tecla y checamos el frente de su cola
         for(Queue<Nota> cola : notasTecla.values()){
-            if(!cola.isEmpty() && (cola.peek().getTiempoInicio() + margenError ) < temporizador){
+            if(!cola.isEmpty() && (cola.peek().getTiempoInicio() + margenError ) < tiempoAct){
                 // Pues ya se paso, por ende ya no entra
                 Nota notaOlvidada= cola.peek();
                 //si es sostenida la sacamos del set
@@ -144,7 +145,7 @@ public class GestorJuego {
         }
 
         // checar si ya perdio (15 fallos)
-        if(fallo>=15){
+        if(fallo >= MAX_FALLOS){
             juegoEstado=false;
             if(musicaActual !=null){    //para detener la musica
                 musicaActual.stop();
@@ -157,7 +158,7 @@ public class GestorJuego {
     //Estas tres van con el tema de la música
     public void iniciarJuego(){
         if (musicaActual != null) {
-            temporizador = 0;
+            tiempoAct = 0;
             musicaActual.stop();
             musicaActual.play();
             musicaActual.setVolume(1);
@@ -178,7 +179,7 @@ public class GestorJuego {
         }
     }
 
-    public void incrementarPuntaje(long desfase, boolean isInicioSos) {  //mas que nada cosas proporcionales
+    public void incrementarPuntaje(float desfase, boolean isInicioSos) {  //mas que nada cosas proporcionales
         int multiplicador = 1;
         if (combo > 30) multiplicador = 5;
         else if (combo > 20) multiplicador = 4;
@@ -187,12 +188,12 @@ public class GestorJuego {
 
         int puntosB = 0;  //Para generalizar casos
 
-        if (desfase <= 40) {     //momento exacto con un rango pequeño para que lo presione
+        if (desfase <= 0.03f) {     //momento exacto con un rango pequeño para que lo presione
             System.out.println("PERFECT!!!");
             puntosB = 300;
             if (fallo > 0) fallo = 0;
 
-        } else if (desfase <= 70) {      //A esta funcion solo entra cuando no hay fallos
+        } else if (desfase <= 0.07f) {      //A esta funcion solo entra cuando no hay fallos
             System.out.println("GREAT!!");
             puntosB = 100;
             if (fallo > 0) fallo = 0;
@@ -226,7 +227,7 @@ public class GestorJuego {
     }
 
     public float getRelacionVida() {
-    		return (float)fallo / 14;
+    		return (float)fallo / MAX_FALLOS;
     }
     
     public float getRelacionTiempo() {

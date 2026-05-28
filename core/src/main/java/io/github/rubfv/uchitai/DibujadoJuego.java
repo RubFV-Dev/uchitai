@@ -221,6 +221,7 @@ public class DibujadoJuego extends DibujadoGeneral {
         //Fondo circular de combo
         sprFondoCombo.setPosition(85, Coord.RESOL_Y - 320);
         sprFondoCombo.setColor(new Color(0.85f, 0.85f, 0.85f, 1f));
+        sprFondoCombo.setRotation((frames / 4) % 360);
         sprFondoCombo.draw(dibujadoPantalla);
         
         //texto combo juego

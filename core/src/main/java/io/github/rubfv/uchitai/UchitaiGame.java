@@ -120,7 +120,7 @@ public class UchitaiGame extends ApplicationAdapter {
 		dibujado.dibujar();
 
         if (pantallaAct == PANTALLA.JUEGO && gestorPartida != null) {   //Para el reloj del juego
-            boolean juegoFin= gestorPartida.limpieza(Gdx.graphics.getDeltaTime());
+            boolean juegoFin= gestorPartida.limpieza();
             if(juegoFin){//si ya termino
                 System.out.println("GAME OVER");
 

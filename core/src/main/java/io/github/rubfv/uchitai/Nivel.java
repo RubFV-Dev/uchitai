@@ -6,20 +6,22 @@ import java.util.*;
 
 public class Nivel implements Serializable {
     private  String nombreCancion;
-    private String archivoAudio;                    //dirección del .mp3 (se cambiara el tipo de archivo)
+    private String archivoAudio;                    //dirección del .mp3(Propenso a eliminarse)
     //Exclusivo para la hora de guardar, de esta forma siempre se estara all en orden
-    private TreeMap<Long,List<Nota>> notas;
+    private TreeMap<Float,List<Nota>> notas;		//Clave(tiempo s) valor lista de teclas de ese tiempo
 
     // Todo CONSTRUCTOR (RUBÉN)
     Nivel() {
     		notas = new TreeMap<>();
     }
+    
+    
 
     public String getNombreCancion() {
         return nombreCancion;
     }
 
-    public TreeMap<Long, List<Nota>> getNotas() {
+    public TreeMap<Float,List<Nota>> getNotas() {
         return notas;
     }
 

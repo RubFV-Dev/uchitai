@@ -4,14 +4,14 @@ package io.github.rubfv.uchitai;
 
 //Aquellas teclas que duran una x cantidad de milisegundos presionadas
 public class NotaSostenida extends Nota{
-    private long tiempoFinal;       //Momento cuando se debe soltar la tecla
+    private float tiempoFinal;       //Momento cuando se debe soltar la tecla
     private boolean inicioAcertado;
 
 
     // Todo CONSTRUCTOR (RUBÉN)
 
 
-    public long getTiempoFinal() {
+    public float getTiempoFinal() {
         return tiempoFinal;
     }
 
