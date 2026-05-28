@@ -105,6 +105,7 @@ public class UchitaiGame extends ApplicationAdapter {
                     gestorPartida = new GestorJuego(nivelCargado, canciones.getCancionActual());
                     gestorPartida.iniciarJuego();
                     // Todo TEMA DE DIBUJADO
+                    nuevo = new DibujadoJuego(dibujado);
                     break;
 				}
 				//Reestructurar
