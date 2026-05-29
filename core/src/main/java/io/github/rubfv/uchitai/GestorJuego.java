@@ -5,144 +5,121 @@ import java.util.*;
 
 //Encargado de manejar la lógica del juego.
 public class GestorJuego {
-	
+
 	protected final int MAX_FALLOS = 15;
-	
+    protected final float MARGEN_ERROR = 0.1f;      //los milisegundos que estan permitidos para desfasarse del presionar
+
     protected Nivel nivelAct;             //como tal all the level
     //Mapa (Keycode, cola de tiempos por tecla) Reordenar para separar por teclas
     //de esta forma sera más facil de manejar
-    protected HashMap<Integer,Queue<Nota>> notasTecla;
-    protected HashMap<Integer,NotaSostenida> sostenidasProceso;   //para tener un lugar para guarda las notas que
-                                                    // sabemos que estan sostenidas en ese momento
+    protected TreeMap<Float,List<Nota>> notasTecla;
+    protected List<Nota> notasActivas;
+
     protected Music musicaActual;
     protected float tiempoAct;          //A emplear el calculo de la musica Perdon no me acuerdo, Este es nuestro reloj interno
     protected boolean juegoEstado;          //pa saber si esta en pausa o no (pendiente de confirmar)
     protected int puntaje;
     protected int combo;                  //El combo es un multiplicador de los puntos
     protected int numFallos;              //contador de fallos
-    protected float margenError= 0.1f;      //los milisegundos que estan permitidos para desfasarse del presionar
+
     protected int fallo;                  //contador de fallos (fallos maximos 14)
     protected int medioFallo;           //contador medio fallo
     protected int acertada;             //contador acertada
     //todo progreso aun no se
 
-     GestorJuego(Nivel level, Music musica){		//El nivel lo recibe, por ende RODRIGO, a la hora de entrar al nivel debe de 
-        nivelAct=level;							//pasarle la estructura ya extraida del archivo 
+     GestorJuego(Nivel level, Music musica){		//El nivel lo recibe, por ende RODRIGO, a la hora de entrar al nivel debe de
+        nivelAct=level;							//pasarle la estructura ya extraida del archivo
         tiempoAct=0;
         juegoEstado=true;
         puntaje=0;
         combo=0;
-        numFallos=0; 
+        numFallos=0;
         fallo=0;
         medioFallo=0;
         acertada=0;
-        notasTecla=level.estructuraJuego();
-        sostenidasProceso=new HashMap<>();
+        notasTecla = level.getNotas();
+        notasActivas = new ArrayList<>();
         musicaActual = musica;
+    }
+
+    public List<Nota> getNotasActivas() {
+        return notasActivas;
     }
 
     // NOTA: Tecnicamente se usa polleo en cada render de las cosas por asi decirlo
 
     //Metodo que manejara las teclas que se presionen
     public void procesarTeclaPresionada(int keycode){
-        //Plan: Al presionar la tecla en tiempo de juego se llama a este metodo mandandole el keycode
-        // de la tecla, posteriormente el metodo buscara la clave en el mapa y verificara si al inicio
-        // de la cola de esa tecla esta el tiempo en que se esta presionando, de ahi se manda a llamar
-        // a los encargados del puntaje.
+        //Plan: Se mantendra en la estructura notas Activas solo las notas para ese momento
         if(!juegoEstado) return;
 
-        // Primer verificación: Si esa nota debe presionarse en este nivel
-        // o esa tecla ya no tiene más momentos en esa cancion
-        if(!notasTecla.containsKey(keycode) || notasTecla.get(keycode).isEmpty()){
-            //Ps esa no era
-            notaOlvidada();
+        Nota notaPress =null;
+        for(Nota n : notasActivas){     //se hace la busqueda de la tecla presionada
+            if(n.getTecla() == keycode){
+                notaPress=n;
+                break;
+            }
+        }
+
+        if (notaPress==null){
+            notaOlvidada();     //si es null entonces esa no era, restar puntos
             return;
         }
 
-        // Ya que comprobamos que la tecla si puede ser presionada pasamos a checar si si debia ser presionada
-        Nota notaProx =notasTecla.get(keycode).peek();
+        float desfase= Math.abs(notaPress.getTiempoInicio()- tiempoAct);     //todo CONSTRUCTOR EN NOTA
 
-        float tempoAct= tiempoAct;
-        float desfase= Math.abs(notaProx.getTiempoInicio()- tempoAct);     //todo CONSTRUCTOR EN NOTA
-
-        if(desfase <= margenError){  //para notas que se presionan correctamente
-            if(notaProx.isSostenida()){
-                NotaSostenida notitaSos = (NotaSostenida) notaProx;
-                notitaSos.setInicioAcertado(true);
-                sostenidasProceso.put(keycode,notitaSos);
-                incrementarPuntaje(desfase,true);
-            }
-            else{
-                incrementarPuntaje(desfase,false);
-                // la nota ya termino, la sacamos de la cola
-                notasTecla.get(keycode).poll();
-                acertada++;
-            }
+        if(desfase <= MARGEN_ERROR){  //para notas que se presionan correctamente
+            incrementarPuntaje(desfase);
+            // la nota ya termino, la sacamos de la lista
+            notasActivas.remove(notaPress);
+            acertada++;
         }
-        else if(tiempoAct < notaProx.getTiempoInicio()-margenError){
+        else if(tiempoAct < notaPress.getTiempoInicio()- MARGEN_ERROR){
             // se presiona antes de tiempo
             notaOlvidada();     //para que le de el fallo
+            notasActivas.remove(notaPress);     //la quitamos, ya no vale
         }
 
     }
 
-    public void procesarTeclaArriba (int keycode){
-         if(!juegoEstado) return;
-
-        NotaSostenida notaProx= sostenidasProceso.remove(keycode);
-         //checar si es una de las notas que deberian de ser sostenidas
-        if(notaProx==null){
-            //Ps no nos interesa
-            return;
-        }
-
-        float tempoAct = tiempoAct; // para no modificar el temporizador
-        if(notaProx.isInicioAcertado()){    //si inicio cuando era debido
-            float desfase= Math.abs(tempoAct-notaProx.getTiempoFinal());
-            if(desfase<=margenError){
-                incrementarPuntaje(desfase, true);  //para que le de la otra mitad de puntos
-                acertada++;
-
-            }
-            else {
-                esCombo(false);
-                medioFallo++;       //estadistica
-                fallo++;            //vida
-                puntaje-=25;    //para no quitarle los 50 ya que fue un error parcial
-                if (puntaje < 0) puntaje = 0;
-            }
-            //verificacion por si acaso
-            if(!notasTecla.isEmpty() && notasTecla !=null) {
-                notasTecla.get(keycode).poll();     // así se libera de su cola
-            }
-        }
-
-    }
 
     //Metodo para poleo
     //Como este es de poleo aqui gestionara el momento para llamar al perder (pendiente fin de juego)
-    public boolean limpieza(){ 
+    public boolean limpieza(){
         // Plan: Metodo encargado de las teclas que se olvidan osea no se presionan, este sera continuo
         // de cierta forma, lo ideal es que cada que avance el tiempo se llame al metodo
         // este verifica las colas de todas las notas y si no estan dentro del margen entonces las elimina
         if(!juegoEstado) return false;
 
         tiempoAct = getRelacionTiempo();      //Aquí actualizamos el tiempo ya que esta se ejecuta en cada ciclo
+        // Tomamos el submapa de todas las notas cuyo tiempo ya llegó
+        SortedMap <Float, List<Nota>> notasAparece = notasTecla.headMap(tiempoAct+0.001f);
 
-        //recorremos cada tecla y checamos el frente de su cola
-        for(Queue<Nota> cola : notasTecla.values()){
-            if(!cola.isEmpty() && (cola.peek().getTiempoInicio() + margenError ) < tiempoAct){
-                // Pues ya se paso, por ende ya no entra
-                Nota notaOlvidada= cola.peek();
-                //si es sostenida la sacamos del set
-                if(notaOlvidada.isSostenida()){
-                    sostenidasProceso.remove(notaOlvidada.getTecla());
+        if(!notasAparece.isEmpty()){    //Si existen para ese tiempo
+            for (List<Nota> listaNotas : notasAparece.values()) {
+                for (Nota n : listaNotas) {
+                    if (!notasActivas.contains(n)) {
+                        notasActivas.add(n);
+                    }
                 }
-                notaOlvidada();
+            }
+            notasAparece.clear();       //las pasmos a la nueva estructura
+        }
 
-                cola.poll();    // Se saca
+        Iterator<Nota> ite = notasActivas.iterator();
+        while (ite.hasNext()) {
+            Nota notaEnPantalla = ite.next();
+
+            //tiempo límite en el que la nota caduca de la pantalla
+            float limiteTiempo = notaEnPantalla.getTiempoInicio() + MARGEN_ERROR;
+
+            if (limiteTiempo < tiempoAct) {
+                //si el tiempo actual superó el límite la nota ya se olvido
+                notaOlvidada();
+                ite.remove();               //Borramos
             }
         }
+
 
         // checar si ya perdio (15 fallos)
         if(fallo >= MAX_FALLOS){
@@ -179,7 +156,7 @@ public class GestorJuego {
         }
     }
 
-    public void incrementarPuntaje(float desfase, boolean isInicioSos) {  //mas que nada cosas proporcionales
+    public void incrementarPuntaje(float desfase) {  //mas que nada cosas proporcionales
         int multiplicador = 1;
         if (combo > 30) multiplicador = 5;
         else if (combo > 20) multiplicador = 4;
@@ -203,9 +180,6 @@ public class GestorJuego {
             puntosB = 35;
         }
         esCombo(true);
-        if (isInicioSos) {    //cuando solo es el inicio de la sostenida dar la mitad, lo otro sera ya que acabe
-            puntosB/=2;
-        }
         puntaje += (puntosB*multiplicador);
     }
 
@@ -229,7 +203,7 @@ public class GestorJuego {
     public float getRelacionVida() {
     		return (float)fallo / MAX_FALLOS;
     }
-    
+
     public float getRelacionTiempo() {
     		return (float)musicaActual.getPosition();
     }
