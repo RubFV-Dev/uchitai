@@ -32,7 +32,7 @@ public class UchitaiGame extends ApplicationAdapter {
     private DibujadoGeneral dibujado;
     private CancionesCargadas canciones;
     private Coord mouse;
-    private GestorJuego gestorPartida;
+    private Gestor gestor;
 
     public PANTALLA getPantallaAct() {
     		return pantallaAct;
@@ -94,6 +94,7 @@ public class UchitaiGame extends ApplicationAdapter {
     		//Si cambia de pantalla, se reorganiza la clase dibujado
 		if (pantallaAct != orgPantallaAct) {
 			if (dibujado.transCompletada()) {
+				Nivel nivelCargado;
 				DibujadoGeneral nuevo = null;
 
 				//Cargar nueva pantalla
@@ -101,12 +102,18 @@ public class UchitaiGame extends ApplicationAdapter {
 				case TITULO:		nuevo = new DibujadoTitulo(dibujado);		break;
 				case SELECCION:	nuevo = new DibujadoSeleccion(dibujado, canciones);		break;
                 case JUEGO:
-                    Nivel nivelCargado = cargarNivelDesdeDisco(canciones.getIndiceCancion());
-                    gestorPartida = new GestorJuego(nivelCargado, canciones.getCancionActual());
-                    gestorPartida.iniciarJuego();
+                    nivelCargado = cargarNivelDesdeDisco(canciones.getIndiceCancion());
+                    gestor = new GestorJuego(nivelCargado, canciones);
+                    gestor.iniciar();
                     // Todo TEMA DE DIBUJADO
                     nuevo = new DibujadoJuego(dibujado);
                     break;
+                case EDICION:
+                    gestor = new GestorEditor(new Nivel(), canciones);
+                    gestor.iniciar();
+                    // Todo TEMA DE DIBUJADO
+                    nuevo = new DibujadoEdicion(dibujado);
+                		break;
 				}
 				//Reestructurar
 				if (nuevo != null) {
@@ -119,8 +126,8 @@ public class UchitaiGame extends ApplicationAdapter {
 		}
 		dibujado.dibujar();
 
-        if (pantallaAct == PANTALLA.JUEGO && gestorPartida != null) {   //Para el reloj del juego
-            boolean juegoFin= gestorPartida.limpieza();
+        if ((pantallaAct == PANTALLA.JUEGO || pantallaAct == PANTALLA.EDICION) && gestor != null) {   //Para el reloj del juego
+            boolean juegoFin = gestor.actualizar();
             if(juegoFin){//si ya termino
                 System.out.println("GAME OVER");
 
@@ -146,16 +153,19 @@ public class UchitaiGame extends ApplicationAdapter {
         if (archivo.exists()) {
             try (ObjectInputStream ois = new ObjectInputStream(archivo.read())) {
                 return (Nivel) ois.readObject();    //para reconstruir el objeto
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 System.out.println("Error al leer el archivo del mapa: " + e.getMessage());
             }
         }
+
+		System.out.println("No existe un mapa para este nivel");
 
         // Si no existe el mapa entonces se manda algo vacío
         return new Nivel();
     }
 
-    public GestorJuego getGestorPartida(){  //pa saber si hay un gestor(por que no existe en un inicio)
-        return gestorPartida;
+    public Gestor getGestorPartida(){  //pa saber si hay un gestor(por que no existe en un inicio)
+        return gestor;
     }
 }

@@ -6,7 +6,6 @@ import java.util.*;
 
 public class Nivel implements Serializable {
     private  String nombreCancion;
-    private String archivoAudio;                    //dirección del .mp3(Propenso a eliminarse)
     //Exclusivo para la hora de guardar, de esta forma siempre se estara all en orden
     private TreeMap<Float,List<Nota>> notas;		//Clave(tiempo s) valor lista de teclas de ese tiempo
 
@@ -15,7 +14,14 @@ public class Nivel implements Serializable {
     		notas = new TreeMap<>();
     }
     
-    
+    public float getTiempoFinal() {
+    		if (!notas.isEmpty()) {
+        		return notas.lastKey();
+    		}
+    		else {
+    			 return 1;
+    		}
+    }
 
     public String getNombreCancion() {
         return nombreCancion;
@@ -23,10 +29,6 @@ public class Nivel implements Serializable {
 
     public TreeMap<Float,List<Nota>> getNotas() {
         return notas;
-    }
-
-    public String getArchivoAudio() {
-        return archivoAudio;
     }
 
     //encargado de realizar la conversion a la estructura de juego

@@ -20,7 +20,12 @@ public class CancionesCargadas {
     
     public String nombreCancion(int i) {
 		if (i >= 0 && i < canciones.length) {
-    		return canciones[i].name();
+			if (canciones[i] != null) {
+    				return canciones[i].name();
+			}
+			else {
+				return "ERR";
+			}
 		}
 		else {
 			return "ANIADIR";

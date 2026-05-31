@@ -1,5 +1,5 @@
 info face="Akshar Unicode" size=150 bold=1 italic=0 charset="" unicode=1 stretchH=100 smooth=1 aa=1 padding=1,1,1,1 spacing=1,1 outline=0
-common lineHeight=150 base=109 scaleW=1024 scaleH=1024 pages=1 packed=0 alphaChnl=1 redChnl=0 greenChnl=0 blueChnl=0
+common lineHeight=150 base=109 scaleW=1024 scaleH=1024 pages=1 packed=0 alphaChnl=0 redChnl=4 greenChnl=4 blueChnl=4
 page id=0 file="Ashkar_grande_0.png"
 chars count=143
 char id=0    x=1013  y=4     width=5     height=3     xoffset=-2    yoffset=148   xadvance=78    page=0  chnl=15

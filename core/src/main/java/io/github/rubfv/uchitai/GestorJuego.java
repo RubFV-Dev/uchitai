@@ -1,36 +1,30 @@
 package io.github.rubfv.uchitai;
 import com.badlogic.gdx.audio.Music;
 import java.util.*;
-
+import java.util.Map.Entry;
 
 //Encargado de manejar la lógica del juego.
-public class GestorJuego {
+public class GestorJuego extends Gestor {
 
-	protected final int MAX_FALLOS = 15;
-    protected final float MARGEN_ERROR = 0.1f;      //los milisegundos que estan permitidos para desfasarse del presionar
+	public static final int MAX_FALLOS = 15;
 
-    protected Nivel nivelAct;             //como tal all the level
     //Mapa (Keycode, cola de tiempos por tecla) Reordenar para separar por teclas
     //de esta forma sera más facil de manejar
     protected TreeMap<Float,List<Nota>> notasTecla;
     protected List<Nota> notasActivas;
+    protected int posNota, anteriorKeycode;
 
-    protected Music musicaActual;
-    protected float tiempoAct;          //A emplear el calculo de la musica Perdon no me acuerdo, Este es nuestro reloj interno
-    protected boolean juegoEstado;          //pa saber si esta en pausa o no (pendiente de confirmar)
     protected int puntaje;
     protected int combo;                  //El combo es un multiplicador de los puntos
     protected int numFallos;              //contador de fallos
 
-    protected int fallo;                  //contador de fallos (fallos maximos 14)
+    protected float fallo;                  //contador de fallos (fallos maximos 10)
     protected int medioFallo;           //contador medio fallo
     protected int acertada;             //contador acertada
     //todo progreso aun no se
 
-     GestorJuego(Nivel level, Music musica){		//El nivel lo recibe, por ende RODRIGO, a la hora de entrar al nivel debe de
-        nivelAct=level;							//pasarle la estructura ya extraida del archivo
-        tiempoAct=0;
-        juegoEstado=true;
+     GestorJuego(Nivel level, CancionesCargadas canciones){		//El nivel lo recibe, por ende RODRIGO, a la hora de entrar al nivel debe de
+    	 	super(level, canciones);
         puntaje=0;
         combo=0;
         numFallos=0;
@@ -39,7 +33,25 @@ public class GestorJuego {
         acertada=0;
         notasTecla = level.getNotas();
         notasActivas = new ArrayList<>();
-        musicaActual = musica;
+        
+        Nota.setAparicion(TIEMPO_APARICION);
+        
+        System.out.println("LISTA NOTAS GUARDADAS: " + aparicionNotas);
+		//Muestra una lista completa de las teclas presionadas
+		for (Entry<Float, List<Nota>> inp: notasTecla.entrySet()) {
+			Float tiempo = inp.getKey();
+			ArrayList<Nota> listaNotas = (ArrayList<Nota>) inp.getValue();
+			System.out.print("SEC: " + tiempo + "\tNOTAS: ");
+			
+			for (Nota n: listaNotas) {
+				System.out.print((char)(n.getTecla() + 36) + " ");
+			}
+			System.out.println();
+		}
+		
+		//variables utilizadas para darles id's a las notas (por el dibujado, agruparlas, etc)
+		posNota = 0;
+		anteriorKeycode = -1;
     }
 
     public List<Nota> getNotasActivas() {
@@ -49,24 +61,26 @@ public class GestorJuego {
     // NOTA: Tecnicamente se usa polleo en cada render de las cosas por asi decirlo
 
     //Metodo que manejara las teclas que se presionen
-    public void procesarTeclaPresionada(int keycode){
+    @Override
+    public void procesarTeclaPresionada(int keycode) {
         //Plan: Se mantendra en la estructura notas Activas solo las notas para ese momento
-        if(!juegoEstado) return;
+        if (!juegoEstado) return;
 
-        Nota notaPress =null;
-        for(Nota n : notasActivas){     //se hace la busqueda de la tecla presionada
+        Nota notaPress = null;
+        for(Nota n : notasActivas) {     //se hace la busqueda de la tecla presionada
             if(n.getTecla() == keycode){
-                notaPress=n;
+                notaPress = n;
                 break;
             }
         }
 
-        if (notaPress==null){
-            notaOlvidada();     //si es null entonces esa no era, restar puntos
+        if (notaPress == null) {
+            //notaOlvidada();     //si es null entonces esa no era, restar puntos
+        		//Comentado para evitar que pierdas puntos
             return;
         }
 
-        float desfase= Math.abs(notaPress.getTiempoInicio()- tiempoAct);     //todo CONSTRUCTOR EN NOTA
+        float desfase = Math.abs(notaPress.getTiempoInicio() - tiempoAct);     //todo CONSTRUCTOR EN NOTA
 
         if(desfase <= MARGEN_ERROR){  //para notas que se presionan correctamente
             incrementarPuntaje(desfase);
@@ -74,36 +88,43 @@ public class GestorJuego {
             notasActivas.remove(notaPress);
             acertada++;
         }
-        else if(tiempoAct < notaPress.getTiempoInicio()- MARGEN_ERROR){
+        else if(tiempoAct < notaPress.getTiempoInicio() - MARGEN_ERROR){
             // se presiona antes de tiempo
             notaOlvidada();     //para que le de el fallo
             notasActivas.remove(notaPress);     //la quitamos, ya no vale
         }
-
     }
 
 
     //Metodo para poleo
     //Como este es de poleo aqui gestionara el momento para llamar al perder (pendiente fin de juego)
-    public boolean limpieza(){
+    @Override
+    public boolean actualizar() {
         // Plan: Metodo encargado de las teclas que se olvidan osea no se presionan, este sera continuo
         // de cierta forma, lo ideal es que cada que avance el tiempo se llame al metodo
         // este verifica las colas de todas las notas y si no estan dentro del margen entonces las elimina
         if(!juegoEstado) return false;
 
-        tiempoAct = getRelacionTiempo();      //Aquí actualizamos el tiempo ya que esta se ejecuta en cada ciclo
+        tiempoAct = musicaActual.getPosition();      //Aquí actualizamos el tiempo ya que esta se ejecuta en cada ciclo
         // Tomamos el submapa de todas las notas cuyo tiempo ya llegó
-        SortedMap <Float, List<Nota>> notasAparece = notasTecla.headMap(tiempoAct+0.001f);
+        SortedMap <Float, List<Nota>> notasAparece = notasTecla.headMap(tiempoAct + aparicionNotas);
 
-        if(!notasAparece.isEmpty()){    //Si existen para ese tiempo
+        if (!notasAparece.isEmpty()) {    //Si existen para ese tiempo
+        		boolean nuevoKeycode = false;
             for (List<Nota> listaNotas : notasAparece.values()) {
                 for (Nota n : listaNotas) {
-                    if (!notasActivas.contains(n)) {
-                        notasActivas.add(n);
+                		n.setId(posNota);
+                    notasActivas.add(n);
+                    
+                    if (!nuevoKeycode && anteriorKeycode != n.getTecla() && anteriorKeycode != -1) {
+                    		nuevoKeycode = true;
+                    		anteriorKeycode = -1;
                     }
+                    if (anteriorKeycode == -1) anteriorKeycode = n.getTecla();
                 }
             }
-            notasAparece.clear();       //las pasmos a la nueva estructura
+            if (nuevoKeycode) posNota++;
+            notasAparece.clear();       //las pasamos a la nueva estructura
         }
 
         Iterator<Nota> ite = notasActivas.iterator();
@@ -120,27 +141,16 @@ public class GestorJuego {
             }
         }
 
-
         // checar si ya perdio (15 fallos)
         if(fallo >= MAX_FALLOS){
+        		//FIN DEL JUEGO
             juegoEstado=false;
-            if(musicaActual !=null){    //para detener la musica
+            if(musicaActual != null){    //para detener la musica
                 musicaActual.stop();
             }
             return true;        //true de perdio
         }
         return false;
-    }
-
-    //Estas tres van con el tema de la música
-    public void iniciarJuego(){
-        if (musicaActual != null) {
-            tiempoAct = 0;
-            musicaActual.stop();
-            musicaActual.play();
-            musicaActual.setVolume(1);
-            juegoEstado = true;
-        }
     }
 
     public void pausarJuego(){
@@ -157,38 +167,40 @@ public class GestorJuego {
     }
 
     public void incrementarPuntaje(float desfase) {  //mas que nada cosas proporcionales
-        int multiplicador = 1;
-        if (combo > 30) multiplicador = 5;
-        else if (combo > 20) multiplicador = 4;
-        else if (combo > 15) multiplicador = 3;
-        else if (combo > 9) multiplicador = 2;
+        float multiplicador = 1;
+        if (combo >= 50) multiplicador = 3f;
+        else if (combo >= 30) multiplicador = 2.5f;
+        else if (combo >= 20) multiplicador = 2f;
+        else if (combo >= 10) multiplicador = 1.5f;
 
         int puntosB = 0;  //Para generalizar casos
 
-        if (desfase <= 0.03f) {     //momento exacto con un rango pequeño para que lo presione
+        if (desfase <= MARGEN_ERROR * 0.3f) {     //momento exacto con un rango pequeño para que lo presione
             System.out.println("PERFECT!!!");
             puntosB = 300;
-            if (fallo > 0) fallo = 0;
+            fallo -= 1.5f;
 
-        } else if (desfase <= 0.07f) {      //A esta funcion solo entra cuando no hay fallos
+        } else if (desfase <= MARGEN_ERROR * 0.7f) {      //A esta funcion solo entra cuando no hay fallos
             System.out.println("GREAT!!");
-            puntosB = 100;
-            if (fallo > 0) fallo = 0;
+            puntosB = 200;
+            fallo -= 1f;
 
         } else {
             System.out.println("GOOD");
-            puntosB = 35;
+            puntosB = 100;
+            fallo -= 0.5f;
         }
         esCombo(true);
-        puntaje += (puntosB*multiplicador);
+        if (fallo < 0) fallo = 0;
+        puntaje += (puntosB * multiplicador);
     }
 
-    public void esCombo(boolean acerto){
-        if(acerto){ //si se continua con el combo se suma
+    public void esCombo(boolean acierto) {
+        if(acierto){ //si se continua con el combo se suma
             combo++;
             return;
         }
-        combo=0;        //si no reinicia
+        combo = 0;        //si no reinicia
     }
 
     public void notaOlvidada() {
@@ -197,14 +209,22 @@ public class GestorJuego {
         puntaje -= 50;
         if (puntaje < 0) puntaje = 0;
         numFallos++;    //estadistica
-        fallo++;        //vida
+        fallo += 1f;        //vida
     }
 
     public float getRelacionVida() {
-    		return (float)fallo / MAX_FALLOS;
+    		return fallo / MAX_FALLOS;
     }
 
     public float getRelacionTiempo() {
-    		return (float)musicaActual.getPosition();
+    		return musicaActual.getPosition() / nivelAct.getTiempoFinal();
+    }
+    
+    public int getCombo() {
+    		return combo;
+    }
+    
+    public int getPuntaje() {
+    		return puntaje;
     }
 }

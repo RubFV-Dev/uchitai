@@ -5,7 +5,7 @@ public class NotaSimple extends Nota{
     //Nada de variables nuevas
     // Todo CONSTRUCTOR (RUBÉN)
 
-	NotaSimple(){
-		
+	NotaSimple(int keycode, float tiempo) {
+		super(keycode, tiempo);
 	}
 }

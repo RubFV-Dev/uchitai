@@ -43,6 +43,13 @@ public class InputGeneral extends InputAdapter {
 		if (!juego.getDibujado().estaBloqueado()) {
 			switch (juego.getPantallaAct()) {
 			case TITULO:
+				//Salir del juego
+				if (keycode == Input.Keys.ESCAPE) {
+					Gdx.app.exit();
+					return false;
+				}
+				
+				//Iniciar juego
 				if (keycode < Input.Keys.F1 || keycode > Input.Keys.F12) {
 					juego.setPantallaAct(PANTALLA.SELECCION);
 				}
@@ -65,6 +72,11 @@ public class InputGeneral extends InputAdapter {
 				case Input.Keys.SHIFT_RIGHT:
 					cancionAleatoria();
 					break;
+					
+				//Regresar al menú anterior
+				case Input.Keys.ESCAPE:
+					juego.setPantallaAct(PANTALLA.TITULO);
+					break;
 				}
 				break;
 
@@ -79,12 +91,36 @@ public class InputGeneral extends InputAdapter {
                     break;
                 case Input.Keys.ENTER:
                 		break;
+                		
+                	//Regresar al menú anterior
+				case Input.Keys.ESCAPE:
+					juego.setPantallaAct(PANTALLA.SELECCION);
+					break;
                 }
                 break;
 
+            case EDICION:
+                switch (keycode) {
+                default: 
+                    if (keycode >= Input.Keys.A && keycode <= Input.Keys.Z) {
+                        if(juego.getGestorPartida() != null){
+                            juego.getGestorPartida().procesarTeclaPresionada(keycode);
+                        }
+                    }
+                    break;
+                
+                //Regresar y guardar
+                case Input.Keys.ESCAPE:
+                		if (juego.getGestorPartida().guardar()) {
+                			juego.setPantallaAct(PANTALLA.SELECCION);
+                		}
+                		break;
+                }
+                break;
 			}
 		}
 
+		//Pantalla completa siempre
 		if (keycode == Input.Keys.F5) {
 			if (!Gdx.graphics.isFullscreen()) {
 				Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
@@ -92,10 +128,6 @@ public class InputGeneral extends InputAdapter {
 			else {
 				Gdx.graphics.setWindowedMode(1280, 720);
 			}
-		}
-
-		if (keycode == Input.Keys.ESCAPE) {
-			Gdx.app.exit();
 		}
 
 		//para conocer las canciones actualmente cargadas
@@ -123,7 +155,7 @@ public class InputGeneral extends InputAdapter {
         if(juego.getPantallaAct() == JUEGO){
             if(keycode >= Input.Keys.A && keycode <= Input.Keys.Z){
                 if(juego.getGestorPartida() != null){
-                    juego.getGestorPartida().procesarTeclaArriba(keycode);
+//                    juego.getGestorPartida().procesarTeclaArriba(keycode);
                 }
             }
         }

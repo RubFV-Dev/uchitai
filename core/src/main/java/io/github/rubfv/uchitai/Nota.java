@@ -9,19 +9,36 @@ import com.badlogic.gdx.Input;
 public abstract class Nota implements Serializable {
     protected Integer tecla;               //Key code de la tecla de acuerdo al Libgdx
     protected float tiempoInicio;      //El tiempo/momento en que debe ser presionada segundos
-    protected float aparece;     //milisegundos antes de que se deba teclear(para aparecer la tecla)
+    protected static float aparicion;
+    protected int id;
 
     // Todo CONSTRUCTOR (RUBÉN)
-    Nota(int keycode) {
+    Nota(int keycode, float tiempo) {
     		tecla = keycode;
-    		tiempoInicio = 0;
-    		aparece = 0.1f;
+    		tiempoInicio = tiempo;
+    		id = 0;
     }
     Nota() {
 		tecla = -1;
 		tiempoInicio = 0;
-		aparece = 0.1f;
-}
+		id = 0;
+    }
+    
+    public static void setAparicion(float nuevaAparicion) {
+    		aparicion = nuevaAparicion;
+    }
+    
+    public void setId(int id) {
+    		this.id = id;
+    }
+    
+    public int getId() {
+    		return id;
+    }
+    
+    public float getRelacionAparecer(float tiempoAct) {
+    		return (tiempoInicio - tiempoAct) / (aparicion);
+    }
 
     public Integer getTecla() {
         return tecla;

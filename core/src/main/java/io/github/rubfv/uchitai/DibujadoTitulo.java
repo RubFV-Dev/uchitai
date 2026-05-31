@@ -68,7 +68,6 @@ public class DibujadoTitulo extends DibujadoGeneral {
 	    	if (!(viejo instanceof DibujadoSeleccion)) {
 	    		txtTitulo = new Texture("hud/titulo.png");
 	    		txtKanji = new Texture("hud/kanji.png");
-	        	texto = new BitmapFont(Gdx.files.internal("Fuente/Ashkar.fnt"));
 	    	}
 	    	//Copia las imágenes existentes
 	    	else {
@@ -76,8 +75,8 @@ public class DibujadoTitulo extends DibujadoGeneral {
 	    		
 	    		txtTitulo = seleccion.txtTitulo;
 	    		txtKanji = seleccion.txtKanji;
-	    		texto = seleccion.texto;
 	    	}
+        	texto = new BitmapFont(Gdx.files.internal("Fuente/Ashkar.fnt"));
 	    	
         	sprTitulo = new Sprite(txtTitulo);
         	sprKanji = new Sprite(txtKanji);
