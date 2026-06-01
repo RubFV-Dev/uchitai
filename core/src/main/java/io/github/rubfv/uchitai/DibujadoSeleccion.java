@@ -216,8 +216,8 @@ public class DibujadoSeleccion extends DibujadoGeneral {
     public void cargar(DibujadoGeneral viejo) {
 		//Carga las nuevas imágenes
 		if (!(viejo instanceof DibujadoTitulo)) {
-			txtTitulo = new Texture("hud/titulo.png");
-			txtKanji = new Texture("hud/kanji.png");
+			txtTitulo = new Texture("Hud/titulo.png");
+			txtKanji = new Texture("Hud/kanji.png");
 		}
 		//Copia las imágenes ya existentes
 		else {
@@ -227,7 +227,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 			txtKanji = titulo.txtKanji;
 		}
 		texto = new BitmapFont(Gdx.files.internal("Fuente/Ashkar.fnt"));
-		txtBotones = new Texture("hud/botones_seleccion.png");
+		txtBotones = new Texture("Hud/botones_seleccion.png");
     		shaderFondo = new ShaderProgram(
     			Gdx.files.internal("Hud/default.vert"),
     			Gdx.files.internal("Hud/mascara.frag")

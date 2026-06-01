@@ -1,4 +1,5 @@
 package io.github.rubfv.uchitai;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import java.util.*;
 import java.util.Map.Entry;
@@ -19,7 +20,7 @@ public class GestorJuego extends Gestor {
     protected int numFallos;              //contador de fallos
 
     protected float fallo;                  //contador de fallos (fallos maximos 10)
-    protected int medioFallo;           //contador medio fallo
+    protected int mediaAcert;           //contador media aciertos
     protected int acertada;             //contador acertada
     //todo progreso aun no se
 
@@ -29,7 +30,7 @@ public class GestorJuego extends Gestor {
         combo=0;
         numFallos=0;
         fallo=0;
-        medioFallo=0;
+        mediaAcert=0;
         acertada=0;
         notasTecla = level.getNotas();
         notasActivas = new ArrayList<>();
@@ -83,7 +84,7 @@ public class GestorJuego extends Gestor {
         float desfase = Math.abs(notaPress.getTiempoInicio() - tiempoAct);     //todo CONSTRUCTOR EN NOTA
 
         if(desfase <= MARGEN_ERROR){  //para notas que se presionan correctamente
-            incrementarPuntaje(desfase);
+            incrementarPuntaje(notaPress, desfase);
             // la nota ya termino, la sacamos de la lista
             notasActivas.remove(notaPress);
             acertada++;
@@ -166,33 +167,41 @@ public class GestorJuego extends Gestor {
         }
     }
 
-    public void incrementarPuntaje(float desfase) {  //mas que nada cosas proporcionales
+    public void incrementarPuntaje(Nota n, float desfase) {  //mas que nada cosas proporcionales
         float multiplicador = 1;
-        if (combo >= 50) multiplicador = 3f;
-        else if (combo >= 30) multiplicador = 2.5f;
-        else if (combo >= 20) multiplicador = 2f;
-        else if (combo >= 10) multiplicador = 1.5f;
+        if (combo >= 50) 		multiplicador = 3f;
+        else if (combo >= 30) 	multiplicador = 2.5f;
+        else if (combo >= 20) 	multiplicador = 2f;
+        else if (combo >= 10) 	multiplicador = 1.5f;
+        PUNTERIA msg = PUNTERIA.BAD;
 
         int puntosB = 0;  //Para generalizar casos
 
-        if (desfase <= MARGEN_ERROR * 0.3f) {     //momento exacto con un rango pequeño para que lo presione
-            System.out.println("PERFECT!!!");
+        if (desfase <= MARGEN_ERROR * 0.2f) {     //momento exacto con un rango pequeño para que lo presione
+            msg = PUNTERIA.PERFECT;
             puntosB = 300;
             fallo -= 1.5f;
 
-        } else if (desfase <= MARGEN_ERROR * 0.7f) {      //A esta funcion solo entra cuando no hay fallos
-            System.out.println("GREAT!!");
+        } else if (desfase <= MARGEN_ERROR * 0.5f) {      //A esta funcion solo entra cuando no hay fallos
+        		msg = PUNTERIA.GREAT;
             puntosB = 200;
             fallo -= 1f;
 
         } else {
-            System.out.println("GOOD");
+        		msg = PUNTERIA.GOOD;
             puntosB = 100;
             fallo -= 0.5f;
         }
         esCombo(true);
         if (fallo < 0) fallo = 0;
         puntaje += (puntosB * multiplicador);
+        
+        //Mandar mensaje de puntería al dibujado
+        UchitaiGame juego = (UchitaiGame)Gdx.app.getApplicationListener();
+        if (juego.getDibujado() instanceof DibujadoJuego) {
+        		DibujadoJuego d = (DibujadoJuego)juego.getDibujado();
+        		d.obtenerPunteria(msg, n.getId());
+        }
     }
 
     public void esCombo(boolean acierto) {
@@ -204,12 +213,18 @@ public class GestorJuego extends Gestor {
     }
 
     public void notaOlvidada() {
-        System.out.println("BAD");
+    		PUNTERIA msg = PUNTERIA.BAD;
         esCombo(false);
         puntaje -= 50;
         if (puntaje < 0) puntaje = 0;
         numFallos++;    //estadistica
         fallo += 1f;        //vida
+
+        UchitaiGame juego = (UchitaiGame)Gdx.app.getApplicationListener();
+        if (juego.getDibujado() instanceof DibujadoJuego) {
+        		DibujadoJuego d = (DibujadoJuego)juego.getDibujado();
+        		d.obtenerPunteria(msg, 0);
+        }
     }
 
     public float getRelacionVida() {
@@ -226,5 +241,11 @@ public class GestorJuego extends Gestor {
     
     public int getPuntaje() {
     		return puntaje;
+    }
+    
+    public float getAsertivo() {
+    		float r = (float)acertada / (acertada + numFallos);
+    		if (acertada + numFallos == 0) return 100;
+    		return r * 100;
     }
 }

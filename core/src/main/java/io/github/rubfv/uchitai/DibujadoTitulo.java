@@ -66,8 +66,8 @@ public class DibujadoTitulo extends DibujadoGeneral {
     public void cargar(DibujadoGeneral viejo) {
 		//Carga las nuevas imágenes
 	    	if (!(viejo instanceof DibujadoSeleccion)) {
-	    		txtTitulo = new Texture("hud/titulo.png");
-	    		txtKanji = new Texture("hud/kanji.png");
+	    		txtTitulo = new Texture("Hud/titulo.png");
+	    		txtKanji = new Texture("Hud/kanji.png");
 	    	}
 	    	//Copia las imágenes existentes
 	    	else {
