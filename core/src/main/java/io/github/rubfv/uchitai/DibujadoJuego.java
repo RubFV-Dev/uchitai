@@ -381,8 +381,8 @@ public class DibujadoJuego extends DibujadoGeneral {
         sprBarras.setRotation(90);
         
         //Fondo tiempo nivelelel
-        sprBarras.setScale(1f, 0.125f);
-        sprBarras.setPosition(Coord.RESOL_X - 33.75f, -230);
+        sprBarras.setScale(1f, 0.136f);
+        sprBarras.setPosition(Coord.RESOL_X - 28.75f, -230);
         sprBarras.setColor(Color.BLACK);
         sprBarras.draw(dibujadoPantalla);
         //Barra Tiempo nivel

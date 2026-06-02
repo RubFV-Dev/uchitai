@@ -93,14 +93,26 @@ public class UchitaiGame extends ApplicationAdapter {
     public void render() {
     		//Si cambia de pantalla, se reorganiza la clase dibujado
 		if (pantallaAct != orgPantallaAct) {
+			if (pantallaAct == PANTALLA.JUEGO && orgPantallaAct == PANTALLA.SELECCION) {
+				int i = canciones.getIndiceCancion();
+				String ruta = canciones.rutaCancion(i) + "/" + canciones.nombreCancion(i) + ".dat";
+				
+				if (!Gdx.files.local(ruta).exists()) pantallaAct = PANTALLA.EDICION;
+			}
 			if (dibujado.transCompletada()) {
 				Nivel nivelCargado;
 				DibujadoGeneral nuevo = null;
 
 				//Cargar nueva pantalla
 				switch (pantallaAct) {
-				case TITULO:		nuevo = new DibujadoTitulo(dibujado);		break;
-				case SELECCION:	nuevo = new DibujadoSeleccion(dibujado, canciones);		break;
+				case TITULO:	
+					nuevo = new DibujadoTitulo(dibujado);
+					gestor = null;
+					break;
+				case SELECCION:
+					nuevo = new DibujadoSeleccion(dibujado, canciones);
+					gestor = null;
+					break;
                 case JUEGO:
                     nivelCargado = cargarNivelDesdeDisco(canciones.getIndiceCancion());
                     gestor = new GestorJuego(nivelCargado, canciones);

@@ -22,6 +22,7 @@ public class GestorJuego extends Gestor {
     protected float fallo;                  //contador de fallos (fallos maximos 10)
     protected int mediaAcert;           //contador media aciertos
     protected int acertada;             //contador acertada
+    protected int contadorIni;
     //todo progreso aun no se
 
      GestorJuego(Nivel level, CancionesCargadas canciones){		//El nivel lo recibe, por ende RODRIGO, a la hora de entrar al nivel debe de
@@ -34,6 +35,7 @@ public class GestorJuego extends Gestor {
         acertada=0;
         notasTecla = level.getNotas();
         notasActivas = new ArrayList<>();
+        contadorIni = 90;
         
         Nota.setAparicion(TIEMPO_APARICION);
         
@@ -104,9 +106,23 @@ public class GestorJuego extends Gestor {
         // Plan: Metodo encargado de las teclas que se olvidan osea no se presionan, este sera continuo
         // de cierta forma, lo ideal es que cada que avance el tiempo se llame al metodo
         // este verifica las colas de todas las notas y si no estan dentro del margen entonces las elimina
-        if(!juegoEstado) return false;
-
-        tiempoAct = musicaActual.getPosition();      //Aquí actualizamos el tiempo ya que esta se ejecuta en cada ciclo
+        if (!juegoEstado) return false;
+        
+        //Tiempo inicio
+        if (contadorIni > 0) {
+        	System.out.println("T: "+ contadorIni);
+	        	contadorIni--;
+	        	tiempoAct = -(float)contadorIni / 60;
+	        	if (contadorIni == 0) {
+	        		juegoEstado = true;
+	        		reanudarJuego();
+	        	}
+        }
+        //Aquí actualizamos el tiempo ya que esta se ejecuta en cada ciclo
+        else {
+            tiempoAct = musicaActual.getPosition();      
+        }
+        
         // Tomamos el submapa de todas las notas cuyo tiempo ya llegó
         SortedMap <Float, List<Nota>> notasAparece = notasTecla.headMap(tiempoAct + aparicionNotas);
 

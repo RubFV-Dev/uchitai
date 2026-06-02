@@ -20,10 +20,10 @@ public abstract class Gestor {
     
     Gestor(Nivel level, CancionesCargadas canciones) {
         nivelAct = level;							//pasarle la estructura ya extraida del archivo
-        tiempoAct = 0;
         aparicionNotas = TIEMPO_APARICION;
+        tiempoAct = -aparicionNotas;
         
-        juegoEstado = true;
+        juegoEstado = false;
         musicaActual = canciones.getCancionActual();
         nombreCancion = canciones.nombreCancion(canciones.getIndiceCancion());
         rutaCancion = canciones.rutaCancion(canciones.getIndiceCancion());
@@ -39,6 +39,7 @@ public abstract class Gestor {
             tiempoAct = 0;
             musicaActual.stop();
             musicaActual.play();
+            musicaActual.pause();
             musicaActual.setVolume(1);
             juegoEstado = true;
         }

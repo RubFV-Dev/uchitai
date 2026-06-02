@@ -78,6 +78,17 @@ public class GestorEditor extends Gestor {
         }
     		return true;
     }
+    
+    @Override
+    public void iniciar() {
+        if (musicaActual != null) {
+            tiempoAct = 0;
+            musicaActual.stop();
+            musicaActual.play();
+            musicaActual.setVolume(1);
+            juegoEstado = true;
+        }
+    }
 
     public boolean actualizar() { 
     		tiempoAct = musicaActual.getPosition();

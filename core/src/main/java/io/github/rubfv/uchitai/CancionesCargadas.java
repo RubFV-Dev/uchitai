@@ -58,7 +58,7 @@ public class CancionesCargadas {
     }
     
     public void cargarListaCanciones() {
-	    FileHandle directorio = Gdx.files.local("../canciones/");
+	    FileHandle directorio = Gdx.files.local("../Canciones/");
 	    ArrayList<FileHandle> carpetas = new ArrayList<>();
 	    System.out.println(directorio.path());
 	    
@@ -89,9 +89,10 @@ public class CancionesCargadas {
     				DibujadoSeleccion sel = (DibujadoSeleccion)juego.getDibujado();
     				
     				sel.anim.animDeslizarIzq();
+        			indiceCancionAct--;
+        			cargarCancion(indiceCancionAct);
+    				sel.recargarTexturas();
     			}
-    			indiceCancionAct--;
-    			cargarCancion(indiceCancionAct);
     		}
     }
     
@@ -102,9 +103,10 @@ public class CancionesCargadas {
     				DibujadoSeleccion sel = (DibujadoSeleccion)juego.getDibujado();
     				
     				sel.anim.animDeslizarDer();
+        			indiceCancionAct++;
+        			cargarCancion(indiceCancionAct);
+    				sel.recargarTexturas();
     			}
-    			indiceCancionAct++;
-    			cargarCancion(indiceCancionAct);
     		}
     }
     
@@ -120,7 +122,8 @@ public class CancionesCargadas {
 	    //Limpiar memory
 	    if (cancionActual != null) {
 		    cancionActual.dispose();
-	    }
+		    cancionActual = null;
+	    } 
 	    if (txtFondo != null) {
 	    		txtFondo.dispose();
 	    }
@@ -136,14 +139,19 @@ public class CancionesCargadas {
 	        		try {
 	        		    txtFondo = new Texture(Gdx.files.internal(ruta + ".png"));
 		    	    }
-		    	    catch (Exception noFoto) {
-		    	    		// Esto no debería existir, pero lo dejo por flojo
-		    	    		Pixmap noFondo = new Pixmap(2, 2, Pixmap.Format.RGBA8888);
-		    	    		noFondo.setColor(new Color(0, 0, 0, 0));
-		    	    		noFondo.fill();
-		    	    		
-		    	    		txtFondo = new Texture(noFondo);
-		    	    		noFondo.dispose();
+		    	    catch (Exception noF) {
+		    	    		try {
+		    	    			txtFondo = new Texture(Gdx.files.internal(ruta + ".jpeg"));
+	        		    }
+		    	    		catch (Exception noFoto) {
+			    	    		// Esto no debería existir, pero lo dejo por flojo
+			    	    		Pixmap noFondo = new Pixmap(2, 2, Pixmap.Format.RGBA8888);
+			    	    		noFondo.setColor(new Color(0, 0, 0, 0));
+			    	    		noFondo.fill();
+			    	    		
+			    	    		txtFondo = new Texture(noFondo);
+			    	    		noFondo.dispose();
+		    	    		}
 		    	    }
 	        		
 				sprFondo = new Sprite(txtFondo);
@@ -200,6 +208,9 @@ public class CancionesCargadas {
     }
     
     public void dispose() {
+	    if (cancionActual != null) {
+		    cancionActual.dispose();
+	    } 
     		txtFondo.dispose();
     }
 }

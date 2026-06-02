@@ -291,6 +291,11 @@ public class InputGeneral extends InputAdapter {
 			//Cargar la nueva canción aleatoria
 			juego.getCanciones().cargarCancion(indiceAct);
 		}
+		
+		if (juego.getDibujado() instanceof DibujadoSeleccion) {
+			DibujadoSeleccion d = (DibujadoSeleccion)juego.getDibujado();
+			d.recargarTexturas();
+		}
     }
     
 	public boolean teclaPresionada(int indice) {
