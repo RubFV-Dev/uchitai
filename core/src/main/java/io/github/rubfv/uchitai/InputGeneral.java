@@ -122,9 +122,7 @@ public class InputGeneral extends InputAdapter {
 	                
 	                //Regresar y guardar
 	                case Input.Keys.ESCAPE:
-	                		if (juego.getGestorPartida().guardar()) {
-	                			juego.setPantallaAct(PANTALLA.SELECCION);
-	                		}
+                			juego.setPantallaAct(PANTALLA.SELECCION);
 	                		break;
 	                }
 	                break;
@@ -143,6 +141,10 @@ public class InputGeneral extends InputAdapter {
 							36 : 68;
 					auxStr += (char)(keycode + extra);
                 }
+				//Números
+				if (keycode >= Input.Keys.NUM_1 && keycode <= Input.Keys.NUM_9) {
+					auxStr += (char)(keycode + 40);
+				}
 				//Espacio
 				else if (keycode == Input.Keys.SPACE) {
 					auxStr += ' ';
@@ -268,7 +270,8 @@ public class InputGeneral extends InputAdapter {
 						Coord c = new Coord(Coord.RESOL_X / 2 - Coord.RESOL_X / 6 - 75, (Coord.RESOL_Y - 400f) / 2 + 150);
 						//Añadir canción
 						if (mouse.dentroDe(c.x, c.x + 150, c.y, c.y + 150)) {
-			            		//RUBEN
+							//Sí se puedeeeee
+			            		//System.out.println("Holation");
 			    			}
 
 				    		c.x = Coord.RESOL_X / 2 + Coord.RESOL_X / 6 - 75;
@@ -365,9 +368,17 @@ public class InputGeneral extends InputAdapter {
 			juego.getCanciones().cargarCancion(indiceAct);
 		}
 		
+		//Recargar texturas
 		if (juego.getDibujado() instanceof DibujadoSeleccion) {
 			DibujadoSeleccion d = (DibujadoSeleccion)juego.getDibujado();
 			d.recargarTexturas();
+			
+			//Quitar pantalla añadir
+			if (indiceOrg == juego.getCanciones().size() - 1) {
+				d.setAniadir(false);
+				escribiendo = false;
+				auxStr = "";
+			}
 		}
     }
     

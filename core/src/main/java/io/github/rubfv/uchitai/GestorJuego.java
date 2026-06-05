@@ -285,7 +285,13 @@ public class GestorJuego extends Gestor {
     }
 
     //TODO checar en que momento se manda a llamar
-    public boolean guardar(String ArchivoPuntuacion, int puntos, String jugador) {
+    @Override
+    public boolean guardar() {
+    		CancionesCargadas can = ((UchitaiGame)Gdx.app.getApplicationListener()).getCanciones();
+    		int i = can.getIndiceCancion();
+		InputGeneral inp = (InputGeneral)Gdx.input.getInputProcessor();
+    		String nombreJugador = inp.getAuxStr();
+    		String ArchivoPuntuacion = can.rutaCancion(i) + "/" + can.nombreCancion(i) + " Progreso.txt";
         Path archivo = Paths.get(ArchivoPuntuacion);
 
         //Para obtener la fecha y hora del registro
@@ -294,7 +300,7 @@ public class GestorJuego extends Gestor {
         String fechaFormateada = ahora.format(formato);
 
         //pa que quede cuadradito
-        String registro = String.format("%-15s %-25s %-25s",jugador,puntos,fechaFormateada);
+        String registro = String.format("%-15s %-25s %-25s",nombreJugador,puntaje,fechaFormateada);
 
         try {
             Files.write(        //Cosas que hacen mas sencillo el manejo de los archivos
@@ -311,14 +317,17 @@ public class GestorJuego extends Gestor {
         return true;    //La verdad no le veo caso a que sea boleano
     }
 
-    public List<String>  LeerPuntajes (String ruta){     //Ps por si quieren leer, en caso contrario se elimina esto
+    public List<String>  LeerPuntajes () {     //Ps por si quieren leer, en caso contrario se elimina esto
+		CancionesCargadas can = ((UchitaiGame)Gdx.app.getApplicationListener()).getCanciones();
+		int i = can.getIndiceCancion();
+		String ruta = can.rutaCancion(i) + "/" + can.nombreCancion(i) + " Progreso.txt";
         Path puntaje = Paths.get(ruta);
         if (Files.exists(puntaje)) {    //si existe el txt
             try {       //Si se usa pues tecnicamente se manda a imrpimir a la pantalla grafica
                 List<String> lineas = Files.readAllLines(puntaje);
 
                 System.out.printf("%-65s%n","-------Historial de Puntajes-------");
-                System.out.printf("%-15s %-25s %-25s","Jugador","Puntaje","Fecha y Hora");
+                System.out.printf("%-15s / %-25s %-25s","Jugador","Puntaje","Fecha y Hora");
 
                 for (String linea : lineas) {
                     System.out.println(linea);

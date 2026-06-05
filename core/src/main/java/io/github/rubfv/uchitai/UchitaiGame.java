@@ -116,6 +116,10 @@ public class UchitaiGame extends ApplicationAdapter {
 			if (dibujado.transCompletada()) {
 				Nivel nivelCargado;
 				DibujadoGeneral nuevo = null;
+				
+				if (gestor != null) {
+					gestor.guardar();
+				}
 
 				//Cargar nueva pantalla
 				switch (pantallaAct) {
