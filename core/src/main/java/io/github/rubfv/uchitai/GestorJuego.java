@@ -14,6 +14,7 @@ import java.nio.file.Paths;
 
 //Encargado de manejar la lógica del juego.
 public class GestorJuego extends Gestor {
+	enum ESTADO{ JUGANDO, GANO, PERDIO }
 
 	public static final int MAX_FALLOS = 15;
 
@@ -31,6 +32,7 @@ public class GestorJuego extends Gestor {
     protected int mediaAcert;           //contador media aciertos
     protected int acertada;             //contador acertada
     protected int contadorIni;
+    protected ESTADO estadoJuego;		//de la enumeración
     //todo progreso aun no se
 
      GestorJuego(Nivel level, CancionesCargadas canciones){		//El nivel lo recibe, por ende RODRIGO, a la hora de entrar al nivel debe de
@@ -44,6 +46,7 @@ public class GestorJuego extends Gestor {
         notasTecla = level.getNotas();
         notasActivas = new ArrayList<>();
         contadorIni = 90;
+        estadoJuego = ESTADO.JUGANDO;
 
         Nota.setAparicion(TIEMPO_APARICION);
 
@@ -165,12 +168,18 @@ public class GestorJuego extends Gestor {
                 ite.remove();               //Borramos
             }
         }
+        
+        //Cambiar a que el juego acabó
+        if (tiempoAct > nivelAct.getNotas().lastKey() + MARGEN_ERROR * 3) {
+        		estadoJuego = ESTADO.GANO;
+        }
 
         // checar si ya perdio (15 fallos)
         if(fallo >= MAX_FALLOS){
         		//FIN DEL JUEGO
             juegoEstado=false;
             if(musicaActual != null){    //para detener la musica
+            		estadoJuego = ESTADO.PERDIO;
                 musicaActual.stop();
             }
 
@@ -275,7 +284,6 @@ public class GestorJuego extends Gestor {
     		return r * 100;
     }
 
-
     //TODO checar en que momento se manda a llamar
     public boolean guardar(String ArchivoPuntuacion, int puntos, String jugador) {
         Path archivo = Paths.get(ArchivoPuntuacion);
@@ -324,5 +332,11 @@ public class GestorJuego extends Gestor {
         }
     }
 
-
+    public boolean esPerdio() {
+    		return estadoJuego == ESTADO.PERDIO;
+    }
+    
+    public boolean esGano() {
+    		return estadoJuego == ESTADO.GANO;
+    }
 }

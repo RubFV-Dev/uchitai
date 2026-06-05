@@ -7,7 +7,7 @@ import java.io.ObjectOutputStream;
 import com.badlogic.gdx.audio.Music;
 
 public abstract class Gestor {
-    public static final float MARGEN_ERROR = 0.3f;      //los milisegundos que estan permitidos para desfasarse del presionar
+    public static final float MARGEN_ERROR = 0.15f;      //los milisegundos que estan permitidos para desfasarse del presionar
 	public static final float TIEMPO_APARICION = 1f;
     
     protected Nivel nivelAct;             //como tal all the level

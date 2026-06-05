@@ -20,12 +20,15 @@ import io.github.rubfv.uchitai.DibujadoSeleccion.Transicion;
 public class DibujadoJuego extends DibujadoGeneral {
 	protected class Animacion {
 		private final int MAX_ANIM_MSG = 60;
+		private final int MAX_ANIM_ESTADO = 40;
 		private int animMsg;
 		private PUNTERIA msg;
 		private int id;
+		private int animEstado;
 		
 		Animacion() {
 			animMsg = 0;
+			animEstado = -1;
 		}
 		
 		public void setMsg(PUNTERIA msg, int id) {
@@ -50,10 +53,29 @@ public class DibujadoJuego extends DibujadoGeneral {
 				msg = null;
 			}
 		}
+
+		public void animEstado() {
+			if (animEstado > 0) animEstado /= 1.0625f;
+			
+			if (animEstado == -1) {
+				animEstado = MAX_ANIM_ESTADO;
+				id = 0;
+				msg = null;
+			}
+			
+			if (animEstado <= 0.1f) {
+				animEstado = 0;
+			}
+		}
 		
 		public float relacionAnim() { 
 			if (animMsg == -1) return 0;
 			return (float) (animMsg) / MAX_ANIM_MSG;
+		}
+		
+		public float relacionAnimEstado() {
+			if (animEstado == -1) return 0;
+			return (float)(MAX_ANIM_ESTADO - animEstado) / MAX_ANIM_ESTADO;
 		}
 	}
 	
@@ -147,6 +169,7 @@ public class DibujadoJuego extends DibujadoGeneral {
         
         dibujadoPantalla.end();
         
+        //Activa el blend para hacer el fondo oscuro
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         
@@ -256,9 +279,11 @@ public class DibujadoJuego extends DibujadoGeneral {
 	        					trans = 1f - (relacionAp - TIEMPO_TRANS) / (1f - TIEMPO_TRANS);
 	        				}
 	        				//Animación falla
-	        				if (relacionAp < -0.2f) {
-	        					float ajuste = -(relacionAp + 0.2f) / (Gestor.getMargenError() - .2f);
+	        				if (relacionAp < -Gestor.getMargenError() * .15f) {
+	        					float ajuste = -(relacionAp + Gestor.getMargenError() * .15f) / (Gestor.getMargenError() - Gestor.getMargenError() * .15f);
 	        					c.lerp(Color.RED, ajuste);
+	        					
+	        					System.out.println("A: " + ajuste);
 	        					
 	        					//Desaparecer tecla
 	        					if (ajuste > .3f) {
@@ -339,6 +364,7 @@ public class DibujadoJuego extends DibujadoGeneral {
         		case GREAT:		tipo = 1;	break;
         		case GOOD:		tipo = 2;	break;
         		case BAD:		tipo = 3;	break;
+        		case null:		tipo = -1;	break;
         		}
         		
         		//ajuste de colores
@@ -539,6 +565,74 @@ public class DibujadoJuego extends DibujadoGeneral {
         
 		anim.anim();
         dibujadoPantalla.end();
+        
+        //Pantalla de muerte
+        if (gestor.esPerdio()) {
+            anim.animEstado();
+            
+        		Gdx.gl.glEnable(GL20.GL_BLEND);
+            Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+            
+            	figurasPantalla.begin();
+
+            figurasPantalla.set(ShapeType.Filled);
+            figurasPantalla.setColor(new Color(1f, 0f, 0f, anim.relacionAnimEstado() * 0.65f));
+            figurasPantalla.rect(0, 0, Coord.RESOL_X, Coord.RESOL_Y);
+                
+            figurasPantalla.end();
+            
+            //Desactiva el blend
+            Gdx.gl.glDisable(GL20.GL_BLEND);
+            
+            dibujadoPantalla.begin();
+	    		//Dibujar texto FIN DE TODITO
+            texto.getData().scaleY = TAM_TXT.y;
+            texto.getData().scaleX = TAM_TXT.x;
+	        //Dibujar borde texto puntaje
+	    		for (int k = 0; k < 4; k++) {
+                renderTexto.setText(
+            			texto, "FIN DEL JUEGO",
+            			new Color(.85f, .85f, .85f, 1f), 800,
+            			Align.center, false
+                	);
+	    	    		texto.draw(
+	    	    			dibujadoPantalla, renderTexto,
+	    	    			(k / 2) * 6 * texto.getData().scaleX + Coord.RESOL_X / 2 - 400 - 3 * texto.getData().scaleX,
+	    	    			(k % 2) * 6 * texto.getData().scaleY + Coord.RESOL_Y / 2 + 75 - 3 * texto.getData().scaleY
+	    	    		);
+	    		}
+            renderTexto.setText(
+        			texto, "FIN DEL JUEGO",
+        			new Color(1, 0, 0, 1f), 800,
+        			Align.center, false
+            	);
+	    		texto.draw(
+        			dibujadoPantalla, renderTexto,
+        			Coord.RESOL_X / 2 - 400, Coord.RESOL_Y / 2 + 75
+        		);
+	    		dibujadoPantalla.end();
+	    		
+	    		//Barra, presiona cualquier tecla para regresar
+	    		figurasPantalla.begin();
+
+	            figurasPantalla.set(ShapeType.Filled);
+	            figurasPantalla.setColor(new Color(0.05f, 0f, 0.075f, 0.25f));
+	    			figurasPantalla.rect(
+	        			0, 290,
+	        			(Coord.RESOL_X / 2) * anim.relacionAnimEstado(), 70
+	    			);
+	    			figurasPantalla.rect(
+		        		Coord.RESOL_X, 290,
+		        		-(Coord.RESOL_X / 2) * anim.relacionAnimEstado(), 70
+	    			);
+	                
+	        figurasPantalla.end();
+        }
+        //Pantalla resultados
+        if (gestor.esGano()) {
+            anim.animEstado();
+        		
+        }
 	}
 	
 	public void obtenerPunteria(PUNTERIA msg, int id) {

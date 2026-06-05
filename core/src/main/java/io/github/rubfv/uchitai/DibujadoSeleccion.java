@@ -868,7 +868,6 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 		}
 		
 		if (!cursorEncima) anim.reiniciarScaleEx();
-		
         dibujadoPantalla.end();
         
         anim.animar();
