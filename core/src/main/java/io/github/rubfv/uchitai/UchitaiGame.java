@@ -6,7 +6,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Color;             //Muchas librerias no se usan
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -96,7 +96,7 @@ public class UchitaiGame extends ApplicationAdapter {
 			if (pantallaAct == PANTALLA.JUEGO && orgPantallaAct == PANTALLA.SELECCION) {
 				int i = canciones.getIndiceCancion();
 				String ruta = canciones.rutaCancion(i) + "/" + canciones.nombreCancion(i) + ".dat";
-				
+
 				if (!Gdx.files.local(ruta).exists()) pantallaAct = PANTALLA.EDICION;
 			}
 			if (dibujado.transCompletada()) {
@@ -105,7 +105,7 @@ public class UchitaiGame extends ApplicationAdapter {
 
 				//Cargar nueva pantalla
 				switch (pantallaAct) {
-				case TITULO:	
+				case TITULO:
 					nuevo = new DibujadoTitulo(dibujado);
 					gestor = null;
 					break;

@@ -1,8 +1,16 @@
 package io.github.rubfv.uchitai;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Music;        //No se esta usando
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.Map.Entry;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 //Encargado de manejar la lógica del juego.
 public class GestorJuego extends Gestor {
@@ -36,22 +44,22 @@ public class GestorJuego extends Gestor {
         notasTecla = level.getNotas();
         notasActivas = new ArrayList<>();
         contadorIni = 90;
-        
+
         Nota.setAparicion(TIEMPO_APARICION);
-        
+
         System.out.println("LISTA NOTAS GUARDADAS: " + aparicionNotas);
 		//Muestra una lista completa de las teclas presionadas
 		for (Entry<Float, List<Nota>> inp: notasTecla.entrySet()) {
 			Float tiempo = inp.getKey();
 			ArrayList<Nota> listaNotas = (ArrayList<Nota>) inp.getValue();
 			System.out.print("SEC: " + tiempo + "\tNOTAS: ");
-			
+
 			for (Nota n: listaNotas) {
 				System.out.print((char)(n.getTecla() + 36) + " ");
 			}
 			System.out.println();
 		}
-		
+
 		//variables utilizadas para darles id's a las notas (por el dibujado, agruparlas, etc)
 		posNota = 0;
 		anteriorKeycode = -1;
@@ -107,7 +115,7 @@ public class GestorJuego extends Gestor {
         // de cierta forma, lo ideal es que cada que avance el tiempo se llame al metodo
         // este verifica las colas de todas las notas y si no estan dentro del margen entonces las elimina
         if (!juegoEstado) return false;
-        
+
         //Tiempo inicio
         if (contadorIni > 0) {
         	System.out.println("T: "+ contadorIni);
@@ -120,9 +128,9 @@ public class GestorJuego extends Gestor {
         }
         //Aquí actualizamos el tiempo ya que esta se ejecuta en cada ciclo
         else {
-            tiempoAct = musicaActual.getPosition();      
+            tiempoAct = musicaActual.getPosition();
         }
-        
+
         // Tomamos el submapa de todas las notas cuyo tiempo ya llegó
         SortedMap <Float, List<Nota>> notasAparece = notasTecla.headMap(tiempoAct + aparicionNotas);
 
@@ -132,7 +140,7 @@ public class GestorJuego extends Gestor {
                 for (Nota n : listaNotas) {
                 		n.setId(posNota);
                     notasActivas.add(n);
-                    
+
                     if (!nuevoKeycode && anteriorKeycode != n.getTecla() && anteriorKeycode != -1) {
                     		nuevoKeycode = true;
                     		anteriorKeycode = -1;
@@ -165,6 +173,8 @@ public class GestorJuego extends Gestor {
             if(musicaActual != null){    //para detener la musica
                 musicaActual.stop();
             }
+
+            // TODO perdio, se guarda puntaje?
             return true;        //true de perdio
         }
         return false;
@@ -211,7 +221,7 @@ public class GestorJuego extends Gestor {
         esCombo(true);
         if (fallo < 0) fallo = 0;
         puntaje += (puntosB * multiplicador);
-        
+
         //Mandar mensaje de puntería al dibujado
         UchitaiGame juego = (UchitaiGame)Gdx.app.getApplicationListener();
         if (juego.getDibujado() instanceof DibujadoJuego) {
@@ -250,18 +260,69 @@ public class GestorJuego extends Gestor {
     public float getRelacionTiempo() {
     		return musicaActual.getPosition() / nivelAct.getTiempoFinal();
     }
-    
+
     public int getCombo() {
     		return combo;
     }
-    
+
     public int getPuntaje() {
     		return puntaje;
     }
-    
+
     public float getAsertivo() {
     		float r = (float)acertada / (acertada + numFallos);
     		if (acertada + numFallos == 0) return 100;
     		return r * 100;
     }
+
+
+    //TODO checar en que momento se manda a llamar
+    public boolean guardar(String ArchivoPuntuacion, int puntos, String jugador) {
+        Path archivo = Paths.get(ArchivoPuntuacion);
+
+        //Para obtener la fecha y hora del registro
+        LocalDateTime ahora = LocalDateTime.now();
+        DateTimeFormatter formato = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String fechaFormateada = ahora.format(formato);
+
+        //pa que quede cuadradito
+        String registro = String.format("%-15s %-25s %-25s",jugador,puntos,fechaFormateada);
+
+        try {
+            Files.write(        //Cosas que hacen mas sencillo el manejo de los archivos
+                archivo,
+                Collections.singletonList(registro),
+                StandardOpenOption.CREATE,           // <- Si no existe, lo CREA
+                StandardOpenOption.APPEND            // <- Si ya existe, lo añade al FINAL (Append)
+            );
+            System.out.println("Puntaje añadido");
+
+        } catch (IOException e) {
+            System.err.println("Error al escribir: " + e.getMessage());
+        }
+        return true;    //La verdad no le veo caso a que sea boleano
+    }
+
+    public void  LeerPuntajes (String ruta){     //Ps por si quieren leer, en caso contrario se elimina esto
+        Path puntaje = Paths.get(ruta);
+        if (Files.exists(puntaje)) {    //si existe el txt
+            try {       //Si se usa pues tecnicamente se manda a imrpimir a la pantalla grafica
+                List<String> lineas = Files.readAllLines(puntaje);
+
+                System.out.printf("%-65s%n","-------Historial de Puntajes-------");
+                System.out.printf("%-15s %-25s %-25s","Jugador","Puntaje","Fecha y Hora");
+
+                for (String linea : lineas) {
+                    System.out.println(linea);
+                }
+
+            } catch (IOException e) {
+                System.err.println("Error al leer el archivo: " + e.getMessage());
+            }
+        } else {
+            System.out.println("El archivo aún no existe. ¡Debes registrar algo primero!");
+        }
+    }
+
+
 }
