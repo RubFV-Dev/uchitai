@@ -47,9 +47,7 @@ public abstract class Gestor {
     
     //en GestorJuego puede servir para guardar la puntuación
     //en GestorEdicion sirve para guardar el mapa
-    public boolean guardar() {
-    		return false;
-    }
+    public void guardar() { /**/ }
     
     public float getTiempoAct() {
     		return tiempoAct;

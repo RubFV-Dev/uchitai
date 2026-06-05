@@ -1,6 +1,11 @@
 package io.github.rubfv.uchitai;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.logging.FileHandler;
 
@@ -201,6 +206,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
     protected Sprite portadaAct;
     protected boolean tieneMapa;
     protected boolean pantallaAniadir;
+    protected List<String> puntuaciones;
     
     public Animacion anim;
     public Transicion trans;
@@ -332,11 +338,40 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 		if (l != canciones.size() -1) {
 			String ruta = canciones.rutaCancion(l) + "/" + canciones.nombreCancion(l)+ ".dat";
 			tieneMapa = Gdx.files.local(ruta).exists();
+			puntuaciones = leerPuntajes();
 		}
 		else {
 			tieneMapa = false;
 		}
 	}
+
+    private List<String> leerPuntajes() {     //Ps por si quieren leer, en caso contrario se elimina esto
+		CancionesCargadas can = ((UchitaiGame)Gdx.app.getApplicationListener()).getCanciones();
+		int i = can.getIndiceCancion();
+		String ruta = can.rutaCancion(i) + "/" + can.nombreCancion(i) + " Progreso.txt";
+        Path puntaje = Paths.get(ruta);
+        if (Files.exists(puntaje)) {    //si existe el txt
+            try {       //Si se usa pues tecnicamente se manda a imrpimir a la pantalla grafica
+                List<String> lineas = Files.readAllLines(puntaje);
+
+                System.out.printf("%-65s%n","-------Historial de Puntajes-------");
+                System.out.printf("%-15s / %-25s %-25s","Jugador","Puntaje","Fecha y Hora");
+
+                for (String linea : lineas) {
+                    System.out.println(linea);
+                }
+                
+                return lineas;
+
+            } catch (IOException e) {
+                System.err.println("Error al leer el archivo: " + e.getMessage());
+            }
+        } else {
+            System.out.println("El archivo aún no existe. ¡Debes registrar algo primero!");
+        }
+
+        return null;
+    }
 	
 	@Override
     public void descargar(DibujadoGeneral nuevo) {		
@@ -514,7 +549,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 	    			texto.getData().scaleX = TAM_TXT.x;
 	    			texto.getData().scaleY = TAM_TXT.y;
 
-	    			//Placeholder, 1989 debería ser la mejor puntuación
+	    			//Placeholder, 1989 debería ser la última puntuación
             		dibujadoPantalla.begin();
 	    			renderTexto.setText(
 	        			texto, "Mejor Puntuación: " + 1989,

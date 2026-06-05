@@ -101,6 +101,12 @@ public class InputGeneral extends InputAdapter {
 	                    }
 	                    break;
 	                case Input.Keys.ENTER:
+	                		if (juego.getGestorPartida() != null) {
+	                			GestorJuego gestor = (GestorJuego)juego.getGestorPartida();
+	                			if (gestor.esGano() || gestor.esPerdio()) {
+	                				juego.setPantallaAct(PANTALLA.SELECCION);
+	                			}
+	                		}
 	                		break;
 	                		
 	                	//Regresar al menú anterior
@@ -233,6 +239,7 @@ public class InputGeneral extends InputAdapter {
 		if (!juego.getDibujado().estaBloqueado()) {
 			switch (button) {
 			case Input.Buttons.LEFT:
+				escribiendo = false;
 				switch(juego.getPantallaAct()) {
 				case TITULO:
 					juego.setPantallaAct(PANTALLA.SELECCION);
@@ -285,9 +292,6 @@ public class InputGeneral extends InputAdapter {
 			            if (mouse.dentroDe(c.x, c.x + 400, c.y - 100, c.y - 50)) {
 			            		escribiendo = true;
 			            }
-			            else {
-			            		escribiendo = false;
-			            }
 			            
 			            //Guardar TODITO
 			            if (mouse.dentroDe(Coord.RESOL_X / 2 - 30, Coord.RESOL_X / 2 + 30, 75, 135) && !auxStr.isEmpty()) {
@@ -295,6 +299,13 @@ public class InputGeneral extends InputAdapter {
 						}
 					}
 					return true;
+					
+				case JUEGO:
+					if (mouse.dentroDe(Coord.RESOL_X / 2 - 200, Coord.RESOL_X / 2 + 200,
+						Coord.RESOL_Y - 950, Coord.RESOL_Y - 900)) {
+						escribiendo = true;
+					}
+					break;
 				}
 				break;
 			}

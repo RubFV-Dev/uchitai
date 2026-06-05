@@ -581,12 +581,29 @@ public class DibujadoJuego extends DibujadoGeneral {
             
             //Desactiva el blend
             Gdx.gl.glDisable(GL20.GL_BLEND);
+
+          //Barra, presiona cualquier tecla para regresar
+	    		figurasPantalla.begin();
+	
+	        figurasPantalla.set(ShapeType.Filled);
+	        figurasPantalla.setColor(new Color(0.05f, 0f, 0.075f, 0.25f));
+	        //Fin del juego
+			figurasPantalla.rect(
+	    			Coord.RESOL_X / 2, 290,
+	    			(Coord.RESOL_X / 2) * anim.relacionAnimEstado(), 70
+			);
+			figurasPantalla.rect(
+	        		Coord.RESOL_X / 2, 290,
+	        		-(Coord.RESOL_X / 2) * anim.relacionAnimEstado(), 70
+			);
+			
+	        figurasPantalla.end();
             
             dibujadoPantalla.begin();
 	    		//Dibujar texto FIN DE TODITO
             texto.getData().scaleY = TAM_TXT.y;
             texto.getData().scaleX = TAM_TXT.x;
-	        //Dibujar borde texto puntaje
+	        //Dibujar borde texto FIN
 	    		for (int k = 0; k < 4; k++) {
                 renderTexto.setText(
             			texto, "FIN DEL JUEGO",
@@ -599,6 +616,7 @@ public class DibujadoJuego extends DibujadoGeneral {
 	    	    			(k % 2) * 6 * texto.getData().scaleY + Coord.RESOL_Y / 2 + 75 - 3 * texto.getData().scaleY
 	    	    		);
 	    		}
+	    		//Fin. Ya ni pepe
             renderTexto.setText(
         			texto, "FIN DEL JUEGO",
         			new Color(1, 0, 0, 1f), 800,
@@ -608,28 +626,239 @@ public class DibujadoJuego extends DibujadoGeneral {
         			dibujadoPantalla, renderTexto,
         			Coord.RESOL_X / 2 - 400, Coord.RESOL_Y / 2 + 75
         		);
-	    		dibujadoPantalla.end();
 	    		
-	    		//Barra, presiona cualquier tecla para regresar
-	    		figurasPantalla.begin();
-
-	            figurasPantalla.set(ShapeType.Filled);
-	            figurasPantalla.setColor(new Color(0.05f, 0f, 0.075f, 0.25f));
-	    			figurasPantalla.rect(
-	        			0, 290,
-	        			(Coord.RESOL_X / 2) * anim.relacionAnimEstado(), 70
-	    			);
-	    			figurasPantalla.rect(
-		        		Coord.RESOL_X, 290,
-		        		-(Coord.RESOL_X / 2) * anim.relacionAnimEstado(), 70
-	    			);
-	                
-	        figurasPantalla.end();
+	    		//Texto Salir de la pantalla
+            renderTexto.setText(
+        			texto, "FIN DEL JUEGO",
+        			new Color(1, 0, 0, 1f), 800,
+        			Align.center, false
+            	);
+	    		texto.draw(
+        			dibujadoPantalla, renderTexto,
+        			Coord.RESOL_X / 2 - 400, Coord.RESOL_Y / 2 + 75
+        		);
+	    		//Texto Pista salir de la pantalla
+	    		texto.getData().scaleX = TAM_TXT.x / 3;
+	    		texto.getData().scaleY = TAM_TXT.y / 3;
+            renderTexto.setText(
+        			texto, "Presiona ENTER para regresar",
+        			Color.WHITE, 800,
+        			Align.center, false
+            	);
+	    		texto.draw(
+        			dibujadoPantalla, renderTexto,
+        			Coord.RESOL_X / 2 - 400, 310
+        		);
+	    		dibujadoPantalla.end();
         }
         //Pantalla resultados
         if (gestor.esGano()) {
+        		InputGeneral inp = (InputGeneral)Gdx.input.getInputProcessor();
             anim.animEstado();
+            float animX = -(1f - anim.relacionAnimEstado()) * Coord.RESOL_Y;
         		
+            figurasPantalla.begin();
+        	
+	        figurasPantalla.set(ShapeType.Filled);
+	        figurasPantalla.setColor(new Color(0.05f, 0f, 0.075f, 0.25f));
+	        //Fin del juego
+			figurasPantalla.rect(
+	    			(Coord.RESOL_X - 800) / 2, 0,
+	    			800, Coord.RESOL_Y * anim.relacionAnimEstado()
+			);
+			//texto área lol
+            figurasPantalla.setColor(new Color(0.125f, 0.125f, 0.125f, 0.65f));
+            figurasPantalla.rect(
+            		Coord.RESOL_X / 2 - 200, Coord.RESOL_Y - 950 + animX,
+                	400, 50
+            );
+            figurasPantalla.set(ShapeType.Line);
+            figurasPantalla.setColor(Color.WHITE);
+            //Señalar cajita
+            if (inp.estaEscribiendo()) {
+                figurasPantalla.rect(
+                		Coord.RESOL_X / 2 - 200, Coord.RESOL_Y - 950 + animX,
+                    	400, 50
+                );
+            }
+            //Animación escribir si no hay texto
+            else if (inp.getAuxStr().isEmpty() && frames % 60 > 0 && frames % 60 < 30){
+                figurasPantalla.rect(
+                		Coord.RESOL_X / 2 - 200, Coord.RESOL_Y - 950 + animX,
+                    	400, 50
+                );
+            }
+			
+	        figurasPantalla.end();
+	        
+	        dibujadoPantalla.begin();
+	        //Texto de completado
+            texto.getData().scaleY = TAM_TXT.y;
+            texto.getData().scaleX = TAM_TXT.x;
+            renderTexto.setText(
+        			texto, "Completado",
+        			Color.WHITE, 800,
+        			Align.center, false
+            	);
+	    		texto.draw(
+        			dibujadoPantalla, renderTexto,
+        			Coord.RESOL_X / 2 - 400, Coord.RESOL_Y - 100 + animX
+        		);
+	    		//Reajustar texto
+	    		texto.getData().scaleX = TAM_TXT.x * .4f;
+	    		texto.getData().scaleY = TAM_TXT.y * .4f;
+	    		//---------- Texto puntuación ----------
+	    		//Literalmente el texto
+            renderTexto.setText(
+        			texto, "Puntuación",
+        			Color.WHITE, 700,
+        			Align.left, false
+            	);
+	    		texto.draw(
+        			dibujadoPantalla, renderTexto,
+        			Coord.RESOL_X / 2 - 350, Coord.RESOL_Y - 300 + animX
+        		);
+	    		//La puntuación
+	    		renderTexto.setText(
+        			texto, ""+ gestor.getPuntaje(),
+        			Color.WHITE, 700,
+        			Align.right, false
+            	);
+	    		texto.draw(
+        			dibujadoPantalla, renderTexto,
+        			Coord.RESOL_X / 2 - 350, Coord.RESOL_Y - 300 + animX
+        		);
+
+	    		//---------- Texto aciertos ----------
+	    		//Literalmente el texto
+            renderTexto.setText(
+        			texto, "Número de Aciertos",
+        			Color.WHITE, 700,
+        			Align.left, false
+            	);
+	    		texto.draw(
+        			dibujadoPantalla, renderTexto,
+        			Coord.RESOL_X / 2 - 350, Coord.RESOL_Y - 400 + animX
+        		);
+	    		//cantidad de Buenísimo
+	    		renderTexto.setText(
+        			texto, ""+ gestor.getMjrCombo(),
+        			Color.WHITE, 700,
+        			Align.right, false
+            	);
+	    		texto.draw(
+        			dibujadoPantalla, renderTexto,
+        			Coord.RESOL_X / 2 - 350, Coord.RESOL_Y - 400 + animX
+        		);
+
+	    		//---------- Texto fallos ----------
+	    		//Literalmente el texto
+            renderTexto.setText(
+        			texto, "Número de Fallos",
+        			Color.WHITE, 700,
+        			Align.left, false
+            	);
+	    		texto.draw(
+        			dibujadoPantalla, renderTexto,
+        			Coord.RESOL_X / 2 - 350, Coord.RESOL_Y - 500 + animX
+        		);
+	    		//Le fallotes
+	    		renderTexto.setText(
+        			texto, ""+ gestor.getFallos(),
+        			Color.WHITE, 700,
+        			Align.right, false
+            	);
+	    		texto.draw(
+        			dibujadoPantalla, renderTexto,
+        			Coord.RESOL_X / 2 - 350, Coord.RESOL_Y - 500 + animX
+        		);
+	    		
+	    		//---------- Texto total de notas ----------
+	    		//Literalmente el texto
+            renderTexto.setText(
+        			texto, "Total de Notas",
+        			Color.WHITE, 700,
+        			Align.left, false
+            	);
+	    		texto.draw(
+        			dibujadoPantalla, renderTexto,
+        			Coord.RESOL_X / 2 - 350, Coord.RESOL_Y - 600 + animX
+        		);
+	    		//Todas las notas
+	    		renderTexto.setText(
+        			texto, ""+ gestor.getTotalNotas(),
+        			Color.WHITE, 700,
+        			Align.right, false
+            	);
+	    		texto.draw(
+        			dibujadoPantalla, renderTexto,
+        			Coord.RESOL_X / 2 - 350, Coord.RESOL_Y - 600 + animX
+        		);
+
+	    		//---------- Texto ratio aciertos ----------
+	    		//Literalmente el texto
+            renderTexto.setText(
+        			texto, "Ratio aciertos",
+        			Color.WHITE, 700,
+        			Align.left, false
+            	);
+	    		texto.draw(
+        			dibujadoPantalla, renderTexto,
+        			Coord.RESOL_X / 2 - 350, Coord.RESOL_Y - 700 + animX
+        		);
+	    		//Le acierté
+	    		renderTexto.setText(
+        			texto, String.format("%.2f",gestor.getAsertivo()) + "%",
+        			Color.WHITE, 700,
+        			Align.right, false
+            	);
+	    		texto.draw(
+        			dibujadoPantalla, renderTexto,
+        			Coord.RESOL_X / 2 - 350, Coord.RESOL_Y - 700 + animX
+        		);
+		    
+		    //---------- Texto mejor combo ----------
+	    		//Literalmente el texto
+	        renderTexto.setText(
+	    			texto, "Mejor Combo",
+	    			Color.WHITE, 700,
+	    			Align.left, false
+	        	);
+	    		texto.draw(
+	    			dibujadoPantalla, renderTexto,
+	    			Coord.RESOL_X / 2 - 350, Coord.RESOL_Y - 800 + animX
+	    		);
+	    		//El mejor combazo
+	    		renderTexto.setText(
+	    			texto, ""+ gestor.getMjrCombo(),
+	    			Color.WHITE, 700,
+	    			Align.right, false
+	        	);
+	    		texto.draw(
+	    			dibujadoPantalla, renderTexto,
+	    			Coord.RESOL_X / 2 - 350, Coord.RESOL_Y - 800 + animX
+	    		);
+
+        		//Texto introducido
+	    		renderTexto.setText(
+        			texto, "Introduce tu nombre",
+        			new Color(1, 0.9f, 0.95f, 1), 400,
+        			Align.center, false
+        		);
+        		texto.draw(
+        			dibujadoPantalla, renderTexto,
+        			Coord.RESOL_X / 2 - 200, Coord.RESOL_Y - 880 + animX
+        		);
+        		renderTexto.setText(
+        			texto, inp.getAuxStr(),
+        			new Color(1, 0.9f, 0.95f, 1), 400,
+        			Align.center, false
+        		);
+        		texto.draw(
+        			dibujadoPantalla, renderTexto,
+        			Coord.RESOL_X / 2 - 200, Coord.RESOL_Y - 930 + animX
+        		);
+		    dibujadoPantalla.end();
         }
 	}
 	

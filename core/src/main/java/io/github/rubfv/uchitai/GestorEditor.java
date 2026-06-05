@@ -62,7 +62,7 @@ public class GestorEditor extends Gestor {
     }
     
     @Override
-    public boolean guardar() {
+    public void guardar() {
 		String ruta = rutaCancion + "/" + nombreCancion + ".dat";
 		FileHandle archivo = Gdx.files.local(ruta);
 		
@@ -74,9 +74,7 @@ public class GestorEditor extends Gestor {
     		catch (IOException e) {
     			System.out.println("Error con guardar el mapa del nivel, lol");
     			e.printStackTrace();
-    			return false;
         }
-    		return true;
     }
     
     @Override

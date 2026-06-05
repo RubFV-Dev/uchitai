@@ -25,7 +25,7 @@ public class GestorJuego extends Gestor {
     protected int posNota, anteriorKeycode;
 
     protected int puntaje;
-    protected int combo;                  //El combo es un multiplicador de los puntos
+    protected int combo, mjrCombo;                  //El combo es un multiplicador de los puntos
     protected int numFallos;              //contador de fallos
 
     protected float fallo;                  //contador de fallos (fallos maximos 10)
@@ -38,7 +38,7 @@ public class GestorJuego extends Gestor {
      GestorJuego(Nivel level, CancionesCargadas canciones){		//El nivel lo recibe, por ende RODRIGO, a la hora de entrar al nivel debe de
     	 	super(level, canciones);
         puntaje=0;
-        combo=0;
+        combo = mjrCombo =0;
         numFallos=0;
         fallo=0;
         mediaAcert=0;
@@ -170,7 +170,7 @@ public class GestorJuego extends Gestor {
         }
         
         //Cambiar a que el juego acabó
-        if (tiempoAct > nivelAct.getNotas().lastKey() + MARGEN_ERROR * 3) {
+        if (tiempoAct > nivelAct.getTiempoFinal() + TIEMPO_APARICION * 5) {
         		estadoJuego = ESTADO.GANO;
         }
 
@@ -242,6 +242,7 @@ public class GestorJuego extends Gestor {
     public void esCombo(boolean acierto) {
         if(acierto){ //si se continua con el combo se suma
             combo++;
+            if (combo > mjrCombo) mjrCombo = combo;
             return;
         }
         combo = 0;        //si no reinicia
@@ -267,15 +268,29 @@ public class GestorJuego extends Gestor {
     }
 
     public float getRelacionTiempo() {
-    		return musicaActual.getPosition() / nivelAct.getTiempoFinal();
+    		float r = musicaActual.getPosition() / nivelAct.getTiempoFinal();
+    		if (r > 1f) return 1f;
+    		return r;
     }
 
     public int getCombo() {
     		return combo;
     }
+    
+    public int getMjrCombo() {
+    		return mjrCombo;
+    }
+    
+    public int getFallos() {
+    		return numFallos;
+    }
 
     public int getPuntaje() {
     		return puntaje;
+    }
+    
+    public int getTotalNotas() {
+    		return (acertada + numFallos);
     }
 
     public float getAsertivo() {
@@ -286,63 +301,36 @@ public class GestorJuego extends Gestor {
 
     //TODO checar en que momento se manda a llamar
     @Override
-    public boolean guardar() {
-    		CancionesCargadas can = ((UchitaiGame)Gdx.app.getApplicationListener()).getCanciones();
-    		int i = can.getIndiceCancion();
-		InputGeneral inp = (InputGeneral)Gdx.input.getInputProcessor();
-    		String nombreJugador = inp.getAuxStr();
-    		String ArchivoPuntuacion = can.rutaCancion(i) + "/" + can.nombreCancion(i) + " Progreso.txt";
-        Path archivo = Paths.get(ArchivoPuntuacion);
+    public void guardar() {
+    		if (estadoJuego == ESTADO.GANO) {
+    			CancionesCargadas can = ((UchitaiGame)Gdx.app.getApplicationListener()).getCanciones();
+        		int i = can.getIndiceCancion();
+        		InputGeneral inp = (InputGeneral)Gdx.input.getInputProcessor();
+        		String nombreJugador = inp.getAuxStr();
+        		String ArchivoPuntuacion = can.rutaCancion(i) + "/" + can.nombreCancion(i) + " Progreso.txt";
+            Path archivo = Paths.get(ArchivoPuntuacion);
 
-        //Para obtener la fecha y hora del registro
-        LocalDateTime ahora = LocalDateTime.now();
-        DateTimeFormatter formato = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String fechaFormateada = ahora.format(formato);
+            //Para obtener la fecha y hora del registro
+            LocalDateTime ahora = LocalDateTime.now();
+            DateTimeFormatter formato = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String fechaFormateada = ahora.format(formato);
 
-        //pa que quede cuadradito
-        String registro = String.format("%-15s %-25s %-25s",nombreJugador,puntaje,fechaFormateada);
+            //pa que quede cuadradito
+            String registro = String.format("%-15s %-25s %-25s",nombreJugador,puntaje,fechaFormateada);
 
-        try {
-            Files.write(        //Cosas que hacen mas sencillo el manejo de los archivos
-                archivo,
-                Collections.singletonList(registro),
-                StandardOpenOption.CREATE,           // <- Si no existe, lo CREA
-                StandardOpenOption.APPEND            // <- Si ya existe, lo añade al FINAL (Append)
-            );
-            System.out.println("Puntaje añadido");
-
-        } catch (IOException e) {
-            System.err.println("Error al escribir: " + e.getMessage());
-        }
-        return true;    //La verdad no le veo caso a que sea boleano
-    }
-
-    public List<String>  LeerPuntajes () {     //Ps por si quieren leer, en caso contrario se elimina esto
-		CancionesCargadas can = ((UchitaiGame)Gdx.app.getApplicationListener()).getCanciones();
-		int i = can.getIndiceCancion();
-		String ruta = can.rutaCancion(i) + "/" + can.nombreCancion(i) + " Progreso.txt";
-        Path puntaje = Paths.get(ruta);
-        if (Files.exists(puntaje)) {    //si existe el txt
-            try {       //Si se usa pues tecnicamente se manda a imrpimir a la pantalla grafica
-                List<String> lineas = Files.readAllLines(puntaje);
-
-                System.out.printf("%-65s%n","-------Historial de Puntajes-------");
-                System.out.printf("%-15s / %-25s %-25s","Jugador","Puntaje","Fecha y Hora");
-
-                for (String linea : lineas) {
-                    System.out.println(linea);
-                }
-                
-                return lineas;
+            try {
+                Files.write(        //Cosas que hacen mas sencillo el manejo de los archivos
+                    archivo,
+                    Collections.singletonList(registro),
+                    StandardOpenOption.CREATE,           // <- Si no existe, lo CREA
+                    StandardOpenOption.APPEND            // <- Si ya existe, lo añade al FINAL (Append)
+                );
+                System.out.println("Puntaje añadido");
 
             } catch (IOException e) {
-                System.err.println("Error al leer el archivo: " + e.getMessage());
+                System.err.println("Error al escribir: " + e.getMessage());
             }
-        } else {
-            System.out.println("El archivo aún no existe. ¡Debes registrar algo primero!");
-        }
-
-        return null;
+    		}
     }
 
     public boolean esPerdio() {
