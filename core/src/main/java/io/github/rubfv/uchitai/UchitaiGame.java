@@ -95,9 +95,23 @@ public class UchitaiGame extends ApplicationAdapter {
 		if (pantallaAct != orgPantallaAct) {
 			if (pantallaAct == PANTALLA.JUEGO && orgPantallaAct == PANTALLA.SELECCION) {
 				int i = canciones.getIndiceCancion();
-				String ruta = canciones.rutaCancion(i) + "/" + canciones.nombreCancion(i) + ".dat";
 
-				if (!Gdx.files.local(ruta).exists()) pantallaAct = PANTALLA.EDICION;
+				//Está en el botón de añadir
+				if (i == canciones.size() - 1) {
+					pantallaAct = PANTALLA.SELECCION;
+					if (dibujado instanceof DibujadoSeleccion) {
+						DibujadoSeleccion d = (DibujadoSeleccion)dibujado;
+						
+						d.setAniadir(true);
+					}
+				}
+				//Cargar los datos
+				else {
+					String ruta = canciones.rutaCancion(i) + "/" + canciones.nombreCancion(i) + ".dat";
+
+					if (!Gdx.files.local(ruta).exists()) pantallaAct = PANTALLA.EDICION;
+				}
+				
 			}
 			if (dibujado.transCompletada()) {
 				Nivel nivelCargado;

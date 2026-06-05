@@ -95,7 +95,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 			return animTrans == 0 && tiempoEx == 0;
 		}
 	};
-    protected class Animacion{
+    protected class Animacion {
     		private static final float MAX_FRAMES_MOV = 5;
     		private static final int MAX_SCALE_EX = 100;
     		private static final float FIN_ANIMACION = 0.01f;
@@ -200,12 +200,14 @@ public class DibujadoSeleccion extends DibujadoGeneral {
     protected Sprite[] sprPortadas;
     protected Sprite portadaAct;
     protected boolean tieneMapa;
+    protected boolean pantallaAniadir;
     
     public Animacion anim;
     public Transicion trans;
     
     DibujadoSeleccion(DibujadoGeneral dib, CancionesCargadas canciones) {
     		this.canciones = canciones;
+    		pantallaAniadir = false;
     		txtPortadas = new Texture[canciones.size()];
     		sprPortadas = new Sprite[canciones.size()];
     		anim = new Animacion(canciones);
@@ -287,11 +289,11 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 
 		    			//cargar el fondo
 		        		try {
-		        			textura = new Texture(Gdx.files.internal(ruta + ".png"));
+		        			textura = new Texture(Gdx.files.local(ruta + ".png"));
 			    	    }
 			    	    catch (Exception noF) {
 			    	    		try {
-			    	    			textura = new Texture(Gdx.files.internal(ruta + ".jpeg"));
+			    	    			textura = new Texture(Gdx.files.local(ruta + ".jpeg"));
 		        		    }
 			    	    		catch (Exception noFoto) {
 				    	    		// Esto no debería existir, pero lo dejo por flojo
@@ -364,6 +366,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 	@Override
     public void dibujar() {
 		GlyphLayout renderTexto = new GlyphLayout();
+		InputGeneral inp = (InputGeneral)Gdx.input.getInputProcessor();
 		boolean cursorEncima = false, transEntrada = false, transSalida = false;
 		int indice = canciones.getIndiceCancion();
 		float animacion = 350 * anim.relacionAnim();
@@ -444,6 +447,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
             		Coord.RESOL_X, 150 * transTransparencia
             	);
             
+            //Barra de miniatura
             if (trans.relacionAnimEspera(20, 0) > 0) {
 	            	figurasPantalla.set(ShapeType.Filled);
 	            figurasPantalla.setColor(new Color(0.05f, 0f, 0.075f, 0.25f));
@@ -452,6 +456,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 	            		trans.relacionAnimEspera(20, 0) * (float) Coord.RESOL_X, 300f
 	            	);
             }
+            //Barra de texto puntuación
             if (trans.relacionAnimEspera(45, 25) > 0) {
 	            	figurasPantalla.set(ShapeType.Filled);
 	            	figurasPantalla.setColor(new Color(0.05f, 0f, 0.075f, 0.25f));
@@ -653,10 +658,19 @@ public class DibujadoSeleccion extends DibujadoGeneral {
         			sprBotones.setOrigin(75, 75);
         			sprBotones.setCenter((i - 1) * 350 - 87.5f + animacion, 105);
         			sprBotones.setScale(0.5f + 0.015f * animBrincos);
+        			if (pantallaAniadir) {
+        				if (inp.getAuxStr().isEmpty()) {
+            				sprBotones.setColor(new Color(.1f, .1f ,.1f, 1));
+        				}
+        				else {
+            				sprBotones.setColor(Color.WHITE);
+        				}
+        			}
         			if (transSalida) {		//Animación encogerse así bien cura
         				sprBotones.setScale(sprBotones.getScaleX(), sprBotones.getScaleY() * transTransparencia);
         			}
         			sprBotones.draw(dibujadoPantalla);
+    				sprBotones.setColor(Color.WHITE);
         			
         			//Dibujar texto junto a animación
         			if (indice == j || relacionAnimAj != 0) {
@@ -780,6 +794,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 	    		sprBotones.draw(dibujadoPantalla);
         }
         else {
+        		//Editar
 	        	//animación de cuando se le acerca el mouse
 	    		if (mouse.dentroDe(Coord.RESOL_X / 2 - 30, Coord.RESOL_X / 2 + 30, 75, 135)) 	{
 	    			anim.animScaleEx();
@@ -867,9 +882,127 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 			sprBotones.draw(dibujadoPantalla);
 		}
 		
-		if (!cursorEncima) anim.reiniciarScaleEx();
         dibujadoPantalla.end();
-        
+		
+		//Pantalla para que rubén añada el importe de archivos
+		if (pantallaAniadir) {
+			Coord c = new Coord(Coord.RESOL_X / 2 - Coord.RESOL_X / 6 - 75, (Coord.RESOL_Y - 400f) / 2 + 150);
+			figurasPantalla.begin();
+			
+            figurasPantalla.set(ShapeType.Filled);
+            figurasPantalla.setColor(new Color(0f, 0f, 0f, 0.65f));
+            figurasPantalla.rect(
+            		0, (Coord.RESOL_Y - 450f) / 2,
+            		Coord.RESOL_X, 450f
+            	);
+
+            figurasPantalla.setColor(new Color(0.125f, 0.125f, 0.125f, 0.65f));
+            figurasPantalla.rect(
+                	(Coord.RESOL_X - 400) / 2, c.y - 100,
+                	400, 50
+            );
+            figurasPantalla.set(ShapeType.Line);
+            figurasPantalla.setColor(Color.WHITE);
+            //Señalar cajita
+            if (inp.estaEscribiendo()) {
+                figurasPantalla.rect(
+                    	(Coord.RESOL_X - 400) / 2, c.y - 100,
+                    	400, 50
+                );
+            }
+            //Animación escribir si no hay texto
+            else if (inp.getAuxStr().isEmpty() && frames % 60 > 0 && frames % 60 < 30){
+                figurasPantalla.rect(
+                    	(Coord.RESOL_X - 400) / 2, c.y - 100,
+                    	400, 50
+                );
+            }
+	            
+            figurasPantalla.end();
+            
+            dibujadoPantalla.begin();
+            
+            //Añadir canción
+            if (mouse.dentroDe(c.x, c.x + 150, c.y, c.y + 150)) {
+	    			anim.animScaleEx();
+	    			animBoton = anim.getScaleEx() * .1f;
+	    			cursorEncima = true;
+	    		}
+	    		else animBoton = 0;
+	    		sprBotones.setRegion(300, 150, 150, 150);
+	    		sprBotones.setSize(150,  150);
+	    		sprBotones.setOrigin(75, 75);
+	    		sprBotones.setPosition(c.x, c.y);
+	    		sprBotones.setScale(0.7f + 0.02f * animBrincos + animBoton);
+	    		sprBotones.draw(dibujadoPantalla);
+	    		
+	    		//Texto añadir canción pal botón añadir canción
+	    		texto.getData().scaleX = TAM_TXT.x * 1.2f;
+	    		texto.getData().scaleY = TAM_TXT.y * 1.2f;
+        		renderTexto.setText(
+        			texto, "Añadir canción",
+        			new Color(1, 0.9f, 0.95f, 1), 500,
+        			Align.center, false
+        		);
+        		texto.draw(
+        			dibujadoPantalla, renderTexto,
+        			c.x - 175,
+        			180 + c.y
+        		);
+
+	    		c.x = Coord.RESOL_X / 2 + Coord.RESOL_X / 6 - 75;
+	    		//Añadir foto
+            if (mouse.dentroDe(c.x, c.x + 150, c.y, c.y + 150)) 	{
+	    			anim.animScaleEx();
+	    			animBoton = anim.getScaleEx() * .1f;
+	    			cursorEncima = true;
+	    		}
+	    		else animBoton = 0;
+	    		sprBotones.setRegion(300, 150, 150, 150);
+	    		sprBotones.setSize(150,  150);
+	    		sprBotones.setOrigin(75, 75);
+	    		sprBotones.setPosition(c.x, c.y);
+	    		sprBotones.setScale(0.7f + 0.02f * animBrincos + animBoton);
+	    		sprBotones.draw(dibujadoPantalla);
+
+        		renderTexto.setText(
+        			texto, "Añadir fondo",
+        			new Color(1, 0.9f, 0.95f, 1), 500,
+        			Align.center, false
+        		);
+        		texto.draw(
+        			dibujadoPantalla, renderTexto,
+        			c.x - 175,
+        			180 + c.y
+        		);
+        		
+        		//Texto introducido
+        		renderTexto.setText(
+        			texto, inp.getAuxStr(),
+        			new Color(1, 0.9f, 0.95f, 1), 600,
+        			Align.center, false
+        		);
+        		texto.draw(
+        			dibujadoPantalla, renderTexto,
+        			(Coord.RESOL_X - 600) / 2,
+        			c.y - 60
+        		);
+        		//Pista introducir texto
+        		renderTexto.setText(
+        			texto, "Nuevo nombre",
+        			new Color(1, 0.9f, 0.95f, 1), 600,
+        			Align.center, false
+        		);
+        		texto.draw(
+        			dibujadoPantalla, renderTexto,
+        			(Coord.RESOL_X - 600) / 2,
+        			c.y
+        		);
+
+	        dibujadoPantalla.end();
+		}
+
+		if (!cursorEncima) anim.reiniciarScaleEx();
         anim.animar();
 	}
 	
@@ -885,5 +1018,16 @@ public class DibujadoSeleccion extends DibujadoGeneral {
     @Override
     public boolean estaBloqueado() {
     		return trans.relacionAnim() != 0 && !trans.esEntrada();
+    }
+    
+    public void setAniadir(boolean b) {
+    		pantallaAniadir = b;
+    		if (!b) {
+        		trans = new Transicion(false);
+    		}
+    }
+    
+    public boolean getAniadir() {
+    		return pantallaAniadir;
     }
 }

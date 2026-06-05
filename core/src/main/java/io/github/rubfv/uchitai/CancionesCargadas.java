@@ -62,7 +62,7 @@ public class CancionesCargadas {
         // Consigue las carpetas dentro del directorio canciones
         for (FileHandle actual : directorio.list()) {
             if (actual.isDirectory()) {
-                FileHandle cancion = Gdx.files.internal(actual.path() + "/" + actual.name() + ".mp3");
+                FileHandle cancion = Gdx.files.local(actual.path() + "/" + actual.name() + ".mp3");
                 System.out.println(actual.path() + "/" + actual.name() + ".mp3");
                 if (cancion.exists()) {
                     carpetas.add(actual);
@@ -87,6 +87,7 @@ public class CancionesCargadas {
 
                 sel.anim.animDeslizarIzq();
                 indiceCancionAct--;
+                sel.setAniadir(false);
                 cargarCancion(indiceCancionAct);
                 sel.recargarTexturas();
             }
@@ -101,6 +102,7 @@ public class CancionesCargadas {
 
                 sel.anim.animDeslizarDer();
                 indiceCancionAct++;
+                sel.setAniadir(false);
                 cargarCancion(indiceCancionAct);
                 sel.recargarTexturas();
             }
@@ -137,14 +139,14 @@ public class CancionesCargadas {
             String ruta = canciones[i].path() + "/" + canciones[i].name();
             // Iniciar canción y poner fondo
             try {
-                cancionActual = Gdx.audio.newMusic(Gdx.files.internal(ruta + ".mp3"));
+                cancionActual = Gdx.audio.newMusic(Gdx.files.local(ruta + ".mp3"));
 
                 // cargar el fondo
                 try {
-                    txtFondo = new Texture(Gdx.files.internal(ruta + ".png"));
+                    txtFondo = new Texture(Gdx.files.local(ruta + ".png"));
                 } catch (Exception noF) {
                     try {
-                        txtFondo = new Texture(Gdx.files.internal(ruta + ".jpeg"));
+                        txtFondo = new Texture(Gdx.files.local(ruta + ".jpeg"));
                     } catch (Exception noFoto) {
                         // Esto no debería existir, pero lo dejo por flojo
                         Pixmap noFondo = new Pixmap(2, 2, Pixmap.Format.RGBA8888);

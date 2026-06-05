@@ -15,6 +15,8 @@ public class InputGeneral extends InputAdapter {
 	private PANTALLA pantallaAct;
 	private Coord mouse;
     protected boolean[] teclas;
+    private String auxStr;
+    private boolean escribiendo;
 
 	InputGeneral(PANTALLA p, Coord m) {
 		super();
@@ -24,6 +26,8 @@ public class InputGeneral extends InputAdapter {
 		}
 		pantallaAct = p;
 		mouse = m;
+		auxStr = "";
+		escribiendo = false;
 	}
 
 	public void setPantallaAct(PANTALLA pantalla) {
@@ -40,83 +44,121 @@ public class InputGeneral extends InputAdapter {
 			teclas[keycode - Input.Keys.A] = true;
 		}
 
-		if (!juego.getDibujado().estaBloqueado()) {
-			switch (juego.getPantallaAct()) {
-			case TITULO:
-				//Salir del juego
-				if (keycode == Input.Keys.ESCAPE) {
-					Gdx.app.exit();
-					return false;
-				}
-				
-				//Iniciar juego
-				if (keycode < Input.Keys.F1 || keycode > Input.Keys.F12) {
-					juego.setPantallaAct(PANTALLA.SELECCION);
-				}
-				break;
-			case SELECCION:
-				switch (keycode) {
-				case Input.Keys.LEFT:
-					juego.getCanciones().antCancion();
-					break;
-
-				case Input.Keys.RIGHT:
-					juego.getCanciones().sigCancion();
-					break;
-
-				case Input.Keys.SPACE:
-					juego.setPantallaAct(JUEGO);
-					break;
-
-				case Input.Keys.SHIFT_LEFT:
-				case Input.Keys.SHIFT_RIGHT:
-					cancionAleatoria();
-					break;
+		if (!escribiendo) {
+			if (!juego.getDibujado().estaBloqueado()) {
+				switch (juego.getPantallaAct()) {
+				case TITULO:
+					//Salir del juego
+					if (keycode == Input.Keys.ESCAPE) {
+						Gdx.app.exit();
+						return false;
+					}
 					
-				//Regresar al menú anterior
-				case Input.Keys.ESCAPE:
-					juego.setPantallaAct(PANTALLA.TITULO);
+					//Iniciar juego
+					if (keycode < Input.Keys.F1 || keycode > Input.Keys.F12) {
+						juego.setPantallaAct(PANTALLA.SELECCION);
+					}
 					break;
+				case SELECCION:
+					//Entrada de datos normales
+					switch (keycode) {
+					case Input.Keys.LEFT:
+						juego.getCanciones().antCancion();
+						break;
+
+					case Input.Keys.RIGHT:
+						juego.getCanciones().sigCancion();
+						break;
+
+					case Input.Keys.SPACE:
+						if (!((DibujadoSeleccion)juego.getDibujado()).getAniadir()) {
+							juego.setPantallaAct(JUEGO);
+						}
+						else if (!auxStr.isEmpty()) {
+							//RUBEN Añadir
+						}
+						break;
+
+					case Input.Keys.SHIFT_LEFT:
+					case Input.Keys.SHIFT_RIGHT:
+						cancionAleatoria();
+						break;
+						
+					//Regresar al menú anterior
+					case Input.Keys.ESCAPE:
+						juego.setPantallaAct(PANTALLA.TITULO);
+						break;
+					}
+					break;
+
+	            case JUEGO:
+	                switch (keycode) {
+	                default: 
+	                    if (keycode >= Input.Keys.A && keycode <= Input.Keys.Z) {
+	                        if(juego.getGestorPartida() != null){
+	                            juego.getGestorPartida().procesarTeclaPresionada(keycode);
+	                        }
+	                    }
+	                    break;
+	                case Input.Keys.ENTER:
+	                		break;
+	                		
+	                	//Regresar al menú anterior
+					case Input.Keys.ESCAPE:
+						juego.setPantallaAct(PANTALLA.SELECCION);
+						break;
+	                }
+	                break;
+
+	            case EDICION:
+	                switch (keycode) {
+	                default: 
+	                    if (keycode >= Input.Keys.A && keycode <= Input.Keys.Z) {
+	                        if(juego.getGestorPartida() != null){
+	                            juego.getGestorPartida().procesarTeclaPresionada(keycode);
+	                        }
+	                    }
+	                    break;
+	                
+	                //Regresar y guardar
+	                case Input.Keys.ESCAPE:
+	                		if (juego.getGestorPartida().guardar()) {
+	                			juego.setPantallaAct(PANTALLA.SELECCION);
+	                		}
+	                		break;
+	                }
+	                break;
 				}
-				break;
-
-            case JUEGO:
-                switch (keycode) {
-                default: 
-                    if (keycode >= Input.Keys.A && keycode <= Input.Keys.Z) {
-                        if(juego.getGestorPartida() != null){
-                            juego.getGestorPartida().procesarTeclaPresionada(keycode);
-                        }
-                    }
-                    break;
-                case Input.Keys.ENTER:
-                		break;
-                		
-                	//Regresar al menú anterior
-				case Input.Keys.ESCAPE:
-					juego.setPantallaAct(PANTALLA.SELECCION);
-					break;
+			}
+		}
+		//Se está escribiendo en el text area
+		else {
+			//Input
+			if (auxStr.length() < 12) {
+				//Letras y su madre
+				if (keycode >= Input.Keys.A && keycode <= Input.Keys.Z) {
+					int extra =
+							Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) ||
+							Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT)?
+							36 : 68;
+					auxStr += (char)(keycode + extra);
                 }
-                break;
-
-            case EDICION:
-                switch (keycode) {
-                default: 
-                    if (keycode >= Input.Keys.A && keycode <= Input.Keys.Z) {
-                        if(juego.getGestorPartida() != null){
-                            juego.getGestorPartida().procesarTeclaPresionada(keycode);
-                        }
-                    }
-                    break;
-                
-                //Regresar y guardar
-                case Input.Keys.ESCAPE:
-                		if (juego.getGestorPartida().guardar()) {
-                			juego.setPantallaAct(PANTALLA.SELECCION);
-                		}
-                		break;
-                }
-                break;
+				//Espacio
+				else if (keycode == Input.Keys.SPACE) {
+					auxStr += ' ';
+				}
+			}
+			//Borrar
+			if (keycode == Input.Keys.BACKSPACE) {
+				if (!auxStr.isEmpty()) {
+					String niu;
+					niu = auxStr.substring(0, auxStr.length() - 1);
+					auxStr = niu;
+				}
+			}
+			//Salir con enter
+			if (keycode == Input.Keys.ENTER) {
+				escribiendo = false;
 			}
 		}
 
@@ -202,21 +244,52 @@ public class InputGeneral extends InputAdapter {
 					else if (mouse.dentroDe(Coord.RESOL_X / 2 + 255, Coord.RESOL_X - 180, 30, 180)) {
 						juego.getCanciones().sigCancion();
 					}
-					//Botón inicio canción
-					else if (mouse.dentroDe(Coord.RESOL_X / 2 - 30, Coord.RESOL_X / 2 + 30, 75, 135)) {
-						juego.setPantallaAct(JUEGO);
-					}
-					//Botón edición mapa
-					else if (mouse.dentroDe(Coord.RESOL_X - 205, Coord.RESOL_X - 95, 200, 300)) {
-						juego.setPantallaAct(PANTALLA.EDICION);
-					}
 					//Botón canción aleatoria
 					else if (mouse.dentroDe(95, 205, 200, 300)) {
 						cancionAleatoria();
 					}
+					//Si no se está añadiendo
+					else if (!((DibujadoSeleccion)juego.getDibujado()).getAniadir()) {
+						//Botón inicio canción
+						if (mouse.dentroDe(Coord.RESOL_X / 2 - 30, Coord.RESOL_X / 2 + 30, 75, 135)) {
+							juego.setPantallaAct(JUEGO);
+						}
+						//Botón edición mapa
+						else if (mouse.dentroDe(Coord.RESOL_X - 205, Coord.RESOL_X - 95, 200, 300)) {
+							CancionesCargadas canciones = juego.getCanciones();
+							int i = canciones.getIndiceCancion();
+							String ruta = canciones.rutaCancion(i) + "/" + canciones.nombreCancion(i) + ".dat";
+
+							if (Gdx.files.local(ruta).exists()) juego.setPantallaAct(PANTALLA.EDICION);
+						}
+					}
+					//Se está añadiendo una canción
 					else {
-						System.out.println("MOUSE: " + mouse.x + "\t" + mouse.y);
-						System.out.println("SCRR: " + Gdx.graphics.getWidth() + "\t" + Gdx.graphics.getHeight());
+						Coord c = new Coord(Coord.RESOL_X / 2 - Coord.RESOL_X / 6 - 75, (Coord.RESOL_Y - 400f) / 2 + 150);
+						//Añadir canción
+						if (mouse.dentroDe(c.x, c.x + 150, c.y, c.y + 150)) {
+			            		//RUBEN
+			    			}
+
+				    		c.x = Coord.RESOL_X / 2 + Coord.RESOL_X / 6 - 75;
+				    		//Añadir foto
+			            if (mouse.dentroDe(c.x, c.x + 150, c.y, c.y + 150)) {
+			            		//RUBEN
+				    		}
+			            
+			            //Añadir texto
+			    			c.x = Coord.RESOL_X / 2 - 200;
+			            if (mouse.dentroDe(c.x, c.x + 400, c.y - 100, c.y - 50)) {
+			            		escribiendo = true;
+			            }
+			            else {
+			            		escribiendo = false;
+			            }
+			            
+			            //Guardar TODITO
+			            if (mouse.dentroDe(Coord.RESOL_X / 2 - 30, Coord.RESOL_X / 2 + 30, 75, 135) && !auxStr.isEmpty()) {
+			            		//RUBEN
+						}
 					}
 					return true;
 				}
@@ -300,5 +373,13 @@ public class InputGeneral extends InputAdapter {
     
 	public boolean teclaPresionada(int indice) {
 		return teclas[indice];
+	}
+	
+	public String getAuxStr() {
+		return auxStr;
+	}
+	
+	public boolean estaEscribiendo() {
+		return escribiendo;
 	}
 }

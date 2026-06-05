@@ -311,7 +311,7 @@ public class GestorJuego extends Gestor {
         return true;    //La verdad no le veo caso a que sea boleano
     }
 
-    public void  LeerPuntajes (String ruta){     //Ps por si quieren leer, en caso contrario se elimina esto
+    public List<String>  LeerPuntajes (String ruta){     //Ps por si quieren leer, en caso contrario se elimina esto
         Path puntaje = Paths.get(ruta);
         if (Files.exists(puntaje)) {    //si existe el txt
             try {       //Si se usa pues tecnicamente se manda a imrpimir a la pantalla grafica
@@ -323,6 +323,8 @@ public class GestorJuego extends Gestor {
                 for (String linea : lineas) {
                     System.out.println(linea);
                 }
+                
+                return lineas;
 
             } catch (IOException e) {
                 System.err.println("Error al leer el archivo: " + e.getMessage());
@@ -330,6 +332,8 @@ public class GestorJuego extends Gestor {
         } else {
             System.out.println("El archivo aún no existe. ¡Debes registrar algo primero!");
         }
+
+        return null;
     }
 
     public boolean esPerdio() {

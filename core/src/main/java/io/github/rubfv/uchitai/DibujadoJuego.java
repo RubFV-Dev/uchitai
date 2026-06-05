@@ -283,8 +283,6 @@ public class DibujadoJuego extends DibujadoGeneral {
 	        					float ajuste = -(relacionAp + Gestor.getMargenError() * .15f) / (Gestor.getMargenError() - Gestor.getMargenError() * .15f);
 	        					c.lerp(Color.RED, ajuste);
 	        					
-	        					System.out.println("A: " + ajuste);
-	        					
 	        					//Desaparecer tecla
 	        					if (ajuste > .3f) {
 	        						trans = 1f - (ajuste - 0.3f) / 0.7f;
