@@ -22,6 +22,7 @@ public class GestorJuego extends Gestor {
     protected TreeMap<Float,List<Nota>> notasTecla;
     protected List<Nota> notasActivas;
     protected int posNota, anteriorKeycode;
+    protected float tiempFinal;
 
     protected int puntaje;
     protected int combo, mjrCombo;                  //El combo es un multiplicador de los puntos
@@ -46,6 +47,7 @@ public class GestorJuego extends Gestor {
         notasActivas = new ArrayList<>();
         contadorIni = 90;
         estadoJuego = ESTADO.JUGANDO;
+        tiempFinal = level.getNotas().lastKey();		//Se hace una copia de la última nota por temas de errores varios con TreeMap
 
         Nota.setAparicion(TIEMPO_APARICION);
 
@@ -120,7 +122,6 @@ public class GestorJuego extends Gestor {
 
         //Tiempo inicio
         if (contadorIni > 0) {
-        	System.out.println("T: "+ contadorIni);
 	        	contadorIni--;
 	        	tiempoAct = -(float)contadorIni / 60;
 	        	if (contadorIni == 0) {
@@ -169,7 +170,7 @@ public class GestorJuego extends Gestor {
         }
 
         //Cambiar a que el juego acabó
-        if (tiempoAct > nivelAct.getTiempoFinal() + TIEMPO_APARICION * 5) {
+        if (tiempoAct > tiempFinal + TIEMPO_APARICION * 2) {
         		estadoJuego = ESTADO.GANO;
         }
 
@@ -267,7 +268,7 @@ public class GestorJuego extends Gestor {
     }
 
     public float getRelacionTiempo() {
-    		float r = musicaActual.getPosition() / nivelAct.getTiempoFinal();
+    		float r = musicaActual.getPosition() / tiempFinal;
     		if (r > 1f) return 1f;
     		return r;
     }

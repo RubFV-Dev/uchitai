@@ -187,21 +187,22 @@ public class DibujadoSeleccion extends DibujadoGeneral {
     		}
     };
 
-    protected final Coord TAM_PORTADA_BARRA = new Coord(430, 150);
-    protected final int MAX_PORTADAS = 9;		//Cantidad de portadas cargadas en memoria, debe ser impar
+    private final Coord TAM_PORTADA_BARRA = new Coord(430, 150);
+    private final int MAX_PUNTUACIONES = 5;
+    private final int MAX_PORTADAS = 9;		//Cantidad de portadas cargadas en memoria, debe ser impar
 
-    protected Texture txtTitulo, txtKanji, txtShaderFondo, txtBotones;
-    protected Sprite sprTitulo, sprKanji, sprBotones;
+    protected Texture txtTitulo, txtKanji, txtShaderFondo, txtBotones, txtBarras;
+    protected Sprite sprTitulo, sprKanji, sprBotones, sprBarras;
     protected BitmapFont texto;
     protected CancionesCargadas canciones;
     protected ShaderProgram shaderFondo;
 
-    protected Texture[] txtPortadas;
-    protected Sprite[] sprPortadas;
-    protected Sprite portadaAct;
-    protected boolean tieneMapa;
-    protected boolean pantallaAniadir;
-    protected List<String> puntuaciones;
+    private Texture[] txtPortadas;
+    private Sprite[] sprPortadas;
+    private Sprite portadaAct;
+    private boolean tieneMapa;
+    private boolean pantallaAniadir;
+    private List<String> puntuaciones;
 
     public Animacion anim;
     public Transicion trans;
@@ -237,10 +238,12 @@ public class DibujadoSeleccion extends DibujadoGeneral {
     			Gdx.files.internal("Hud/mascara.frag")
     		);
 		txtShaderFondo = new Texture("Hud/mascara_fondo.png");
+		txtBarras = new Texture(Gdx.files.internal("Hud/hud_barras.png"));
 
 		sprTitulo = new Sprite(txtTitulo);
 		sprKanji = new Sprite(txtKanji);
 		sprBotones = new Sprite(txtBotones);
+		sprBarras = new Sprite(txtBarras);
 
 		//Ajustar tamaños de los sprites y texto
 	    sprTitulo.setScale(0.25f);
@@ -373,7 +376,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
                 System.err.println("Error al leer el archivo: " + e.getMessage());
             }
         } else {
-            System.out.println("El archivo aún no existe. ¡Debes registrar algo primero!");
+            System.out.println("El archivo de puntuaciones aún no existe.");
         }
 
         return null;
@@ -401,6 +404,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 	    texto.dispose();
     		txtBotones.dispose();
     		txtShaderFondo.dispose();
+    		txtBarras.dispose();
     		shaderFondo.dispose();
     	}
 
@@ -498,7 +502,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 	            	);
             }
             //Barra de texto puntuación
-            if (trans.relacionAnimEspera(45, 25) > 0) {
+            if (trans.relacionAnimEspera(45, 25) > 0 && puntuaciones != null) {
 	            	figurasPantalla.set(ShapeType.Filled);
 	            	figurasPantalla.setColor(new Color(0.05f, 0f, 0.075f, 0.25f));
 	            figurasPantalla.rect(
@@ -528,6 +532,62 @@ public class DibujadoSeleccion extends DibujadoGeneral {
         sprTitulo.draw(dibujadoPantalla);
         sprKanji.draw(dibujadoPantalla);
 
+        //Barras de puntuaciones
+        if (puntuaciones != null) {
+        		float animX = trans.relacionAnim() * 800 + Coord.RESOL_X * anim.relacionAnim();
+	        for (int i = puntuaciones.size() - 1, j = 0; i >= 0 && j < MAX_PUNTUACIONES; i--, j++) {
+	        		//Dibujar barra de puntuación
+	            sprBarras.setRegion(0, 0, 1280, 460);
+	            sprBarras.setSize(1, 460);
+	            sprBarras.setOrigin(0, 230);
+	            sprBarras.setRotation(0);
+	            sprBarras.setScale(700, 0.15f);
+	            //Sombra
+	            sprBarras.setColor(new Color(0, 0, 0, 0.35f));
+	            sprBarras.setPosition(Coord.RESOL_X - 700 + animX, Coord.RESOL_Y - 408 - 80 * j);
+	            sprBarras.draw(dibujadoPantalla);
+
+	            //Barrita
+	            sprBarras.setColor(new Color(.875f, .875f, .875f, 1));
+	            sprBarras.setPosition(Coord.RESOL_X - 700 + animX, Coord.RESOL_Y - 400 - 80 * j);
+	            sprBarras.draw(dibujadoPantalla);
+
+	            //Esquinita
+	            sprBarras.setRegion(0, 460, 330, 460);
+	            sprBarras.setSize(460, 460);
+	            sprBarras.setScale(0.1f, 0.15f);
+	            //Sombrarronga
+	            sprBarras.setColor(new Color(0, 0, 0, 0.35f));
+	            sprBarras.setPosition(Coord.RESOL_X - 746f + animX, Coord.RESOL_Y - 408 - 80 * j);
+	            sprBarras.draw(dibujadoPantalla);
+	            //Equiñonga
+	            sprBarras.setColor(new Color(.875f, .875f, .875f, 1));
+	            sprBarras.setPosition(Coord.RESOL_X - 746f + animX, Coord.RESOL_Y - 400 - 80 * j);
+	            sprBarras.draw(dibujadoPantalla);
+
+	            //Puntuación sombra
+	            renderTexto.setText(
+	        			texto, puntuaciones.get(i),
+	        			new Color(0, 0, 0, 0.35f), 700,
+	        			Align.left, false
+	            	);
+	        		texto.draw(
+	        			dibujadoPantalla, renderTexto,
+	        			Coord.RESOL_X - 688 + animX, Coord.RESOL_Y - 157 - 80 * j
+	        		);
+	        		//Puntuación texto
+	        		renderTexto.setText(
+	        			texto, puntuaciones.get(i),
+	        			Color.BLACK, 700,
+	        			Align.left, false
+	            	);
+	        		texto.draw(
+	        			dibujadoPantalla, renderTexto,
+	        			Coord.RESOL_X - 690 + animX, Coord.RESOL_Y - 155 - 80 * j
+	        		);
+	        }
+        }
+
         dibujadoPantalla.end();
 
         //Oscurecer pantalla. Transición a salida
@@ -549,16 +609,16 @@ public class DibujadoSeleccion extends DibujadoGeneral {
             Gdx.gl.glDisable(GL20.GL_BLEND);
 
             //Texto mejor puntuación
-            if (trans.relacionAnimEspera(45, 25) > 0) {
+            if (trans.relacionAnimEspera(45, 25) > 0 && puntuaciones != null) {
 	    			Coord txtOrg = new Coord(texto.getScaleX(), texto.getScaleY());
 
 	    			texto.getData().scaleX = TAM_TXT.x;
 	    			texto.getData().scaleY = TAM_TXT.y;
 
-	    			//Placeholder, 1989 debería ser la última puntuación
+	    			//----- Última puntiación -----
             		dibujadoPantalla.begin();
 	    			renderTexto.setText(
-	        			texto, "Mejor Puntuación: " + 1989,
+	        			texto, "Última Puntuación: " + puntuaciones.getLast(),
 	        			new Color(1f, 1f, 1f, 1f), Coord.RESOL_X,
 	        			Align.center, false
 	            	);
@@ -1072,3 +1132,4 @@ public class DibujadoSeleccion extends DibujadoGeneral {
     		return pantallaAniadir;
     }
 }
+

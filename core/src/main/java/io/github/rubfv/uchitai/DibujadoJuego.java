@@ -312,22 +312,24 @@ public class DibujadoJuego extends DibujadoGeneral {
 	        		}
 
 	        		//Nota presionada
-	        		if (input.teclaPresionada(keycode - Input.Keys.A)) {
-	        			sprFondoTeclas.setColor(Color.WHITE);
-	        			sprHudTeclas.setColor(Color.WHITE);
-	        			sprFondoTeclas.setScale(TAM_TECLA * 1.05f);
-	        			sprHudTeclas.setScale(TAM_TECLA * 1.05f);
+	        		if (!gestor.esPerdio() && !gestor.esGano()) {
+		        		if (input.teclaPresionada(keycode - Input.Keys.A)) {
+		        			sprFondoTeclas.setColor(Color.WHITE);
+		        			sprHudTeclas.setColor(Color.WHITE);
+		        			sprFondoTeclas.setScale(TAM_TECLA * 1.05f);
+		        			sprHudTeclas.setScale(TAM_TECLA * 1.05f);
 
-	        			sprFondoTeclas.setScale(TAM_TECLA);
-	    	        		sprFondoTeclas.setPosition(espacio.x, espacio.y);
-	    	        		sprFondoTeclas.draw(dibujadoPantalla);
-	    	        		//Mostrar letra de la tecla
-	    	        		sprHudTeclas.setRegion(posX * 200, posY * 200, 200, 200);
-	    	        		sprHudTeclas.setSize(200,  200);
-	    	        		sprHudTeclas.setOrigin(100, 100);
-	    	        		sprHudTeclas.setPosition(espacio.x, espacio.y);
-	    	        		sprHudTeclas.setScale(TAM_TECLA);
-	    	        		sprHudTeclas.draw(dibujadoPantalla);
+		        			sprFondoTeclas.setScale(TAM_TECLA);
+		    	        		sprFondoTeclas.setPosition(espacio.x, espacio.y);
+		    	        		sprFondoTeclas.draw(dibujadoPantalla);
+		    	        		//Mostrar letra de la tecla
+		    	        		sprHudTeclas.setRegion(posX * 200, posY * 200, 200, 200);
+		    	        		sprHudTeclas.setSize(200,  200);
+		    	        		sprHudTeclas.setOrigin(100, 100);
+		    	        		sprHudTeclas.setPosition(espacio.x, espacio.y);
+		    	        		sprHudTeclas.setScale(TAM_TECLA);
+		    	        		sprHudTeclas.draw(dibujadoPantalla);
+		        		}
 	        		}
 	        	}
         }
@@ -852,6 +854,18 @@ public class DibujadoJuego extends DibujadoGeneral {
         			dibujadoPantalla, renderTexto,
         			Coord.RESOL_X / 2 - 200, Coord.RESOL_Y - 930 + animX
         		);
+        		//Pista para que ya se salga el playa
+        		if (!inp.getLevelName().isEmpty() && !inp.estaEscribiendo()) {
+            		renderTexto.setText(
+            			texto, "Presiona ENTER para regresar",
+            			new Color(1, 0.9f, 0.95f, 1), 400,
+            			Align.center, false
+            		);
+            		texto.draw(
+            			dibujadoPantalla, renderTexto,
+            			Coord.RESOL_X / 2 - 200, Coord.RESOL_Y - 1000 + animX
+            		);
+        		}
 		    dibujadoPantalla.end();
         }
 	}
