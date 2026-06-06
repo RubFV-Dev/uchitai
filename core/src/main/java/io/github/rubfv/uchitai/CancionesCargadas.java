@@ -1,6 +1,7 @@
 package io.github.rubfv.uchitai;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Random;
 
 import com.badlogic.gdx.Gdx;
@@ -12,11 +13,12 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 
 public class CancionesCargadas {
-    private FileHandle[] canciones;
+    private static FileHandle[] canciones;
     private Music cancionActual;
     private int indiceCancionAct;
     private Texture txtFondo;
     private Sprite sprFondo;
+    static public FileHandle dirCanciones = Gdx.files.local("../Canciones/");
 
     public String nombreCancion(int i) {
         if (i >= 0 && i < canciones.length) {
@@ -54,13 +56,15 @@ public class CancionesCargadas {
         return indiceCancionAct;
     }
 
-    public void cargarListaCanciones() {
-        FileHandle directorio = Gdx.files.local("../Canciones/");
+    public static void cargarListaCanciones() {
+        if (!dirCanciones.exists()) {
+            dirCanciones.mkdirs();
+        }
         ArrayList<FileHandle> carpetas = new ArrayList<>();
-        System.out.println(directorio.path());
+        System.out.println(dirCanciones.path());
 
         // Consigue las carpetas dentro del directorio canciones
-        for (FileHandle actual : directorio.list()) {
+        for (FileHandle actual : dirCanciones.list()) {
             if (actual.isDirectory()) {
                 FileHandle cancion = Gdx.files.local(actual.path() + "/" + actual.name() + ".mp3");
                 System.out.println(actual.path() + "/" + actual.name() + ".mp3");
@@ -213,5 +217,28 @@ public class CancionesCargadas {
             cancionActual.dispose();
         }
         txtFondo.dispose();
+    }
+
+    static public void subirCancion(String newName, FileHandle song, FileHandle png){
+        if (Objects.equals(newName, "") || !song.exists() || !png.exists()) {
+            return;
+        }
+
+        FileHandle newDir = dirCanciones.child(newName);
+        if (newDir.isDirectory()){
+            return;
+        }
+        newDir.mkdirs();
+        String newNameSong = newName + "." + song.extension();
+        String newNamePng = newName + "." + png.extension();
+
+        FileHandle newSong = newDir.child(newNameSong);
+        FileHandle newPng = newDir.child(newNamePng);
+        song.moveTo(newSong);
+        png.moveTo(newPng);
+        UchitaiGame juego = (UchitaiGame) Gdx.app.getApplicationListener();
+        cargarListaCanciones();
+        DibujadoSeleccion sel = (DibujadoSeleccion) juego.getDibujado();
+        sel.recargarTexturas();
     }
 }

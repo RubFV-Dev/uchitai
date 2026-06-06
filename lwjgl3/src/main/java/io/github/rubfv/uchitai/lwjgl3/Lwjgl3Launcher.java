@@ -6,6 +6,8 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import io.github.rubfv.uchitai.Coord;
 import io.github.rubfv.uchitai.UchitaiGame;
 
+import games.spooky.gdx.nativefilechooser.desktop.DesktopFileChooser;
+
 /** Launches the desktop (LWJGL3) application. */
 public class Lwjgl3Launcher {
     public static void main(String[] args) {
@@ -14,7 +16,7 @@ public class Lwjgl3Launcher {
     }
 
     private static Lwjgl3Application createApplication() {
-        return new Lwjgl3Application(new UchitaiGame(), getDefaultConfiguration());
+        return new Lwjgl3Application(new UchitaiGame(new DesktopFileChooser()), getDefaultConfiguration());
     }
 
     private static Lwjgl3ApplicationConfiguration getDefaultConfiguration() {

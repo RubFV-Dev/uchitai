@@ -21,6 +21,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ScreenUtils;
+import games.spooky.gdx.nativefilechooser.NativeFileChooser;
 
 /*
  * 		Esta clase funciona para el manejo del dibujado del juego
@@ -30,6 +31,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class UchitaiGame extends ApplicationAdapter {
 
+    public GestorArchivos gestorArch;
 	private PANTALLA pantallaAct, orgPantallaAct;
 
     private InputGeneral input;
@@ -52,6 +54,10 @@ public class UchitaiGame extends ApplicationAdapter {
 
     public DibujadoGeneral getDibujado() {
     		return dibujado;
+    }
+
+    public UchitaiGame(NativeFileChooser fileChooser) {
+        this.gestorArch = new GestorArchivos(fileChooser);
     }
 
     @Override
@@ -105,7 +111,7 @@ public class UchitaiGame extends ApplicationAdapter {
 					pantallaAct = PANTALLA.SELECCION;
 					if (dibujado instanceof DibujadoSeleccion) {
 						DibujadoSeleccion d = (DibujadoSeleccion)dibujado;
-						
+
 						d.setAniadir(true);
 					}
 				}
@@ -115,12 +121,12 @@ public class UchitaiGame extends ApplicationAdapter {
 
 					if (!Gdx.files.local(ruta).exists()) pantallaAct = PANTALLA.EDICION;
 				}
-				
+
 			}
 			if (dibujado.transCompletada()) {
 				Nivel nivelCargado;
 				DibujadoGeneral nuevo = null;
-				
+
 				if (gestor != null) {
 					gestor.guardar();
 				}

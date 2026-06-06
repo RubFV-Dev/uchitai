@@ -1,6 +1,5 @@
 package io.github.rubfv.uchitai;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.Music;        //No se esta usando
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -168,7 +167,7 @@ public class GestorJuego extends Gestor {
                 ite.remove();               //Borramos
             }
         }
-        
+
         //Cambiar a que el juego acabó
         if (tiempoAct > nivelAct.getTiempoFinal() + TIEMPO_APARICION * 5) {
         		estadoJuego = ESTADO.GANO;
@@ -276,11 +275,11 @@ public class GestorJuego extends Gestor {
     public int getCombo() {
     		return combo;
     }
-    
+
     public int getMjrCombo() {
     		return mjrCombo;
     }
-    
+
     public int getFallos() {
     		return numFallos;
     }
@@ -288,7 +287,7 @@ public class GestorJuego extends Gestor {
     public int getPuntaje() {
     		return puntaje;
     }
-    
+
     public int getTotalNotas() {
     		return (acertada + numFallos);
     }
@@ -306,7 +305,7 @@ public class GestorJuego extends Gestor {
     			CancionesCargadas can = ((UchitaiGame)Gdx.app.getApplicationListener()).getCanciones();
         		int i = can.getIndiceCancion();
         		InputGeneral inp = (InputGeneral)Gdx.input.getInputProcessor();
-        		String nombreJugador = inp.getAuxStr();
+        		String nombreJugador = inp.getLevelName();
         		String ArchivoPuntuacion = can.rutaCancion(i) + "/" + can.nombreCancion(i) + " Progreso.txt";
             Path archivo = Paths.get(ArchivoPuntuacion);
 
@@ -336,7 +335,7 @@ public class GestorJuego extends Gestor {
     public boolean esPerdio() {
     		return estadoJuego == ESTADO.PERDIO;
     }
-    
+
     public boolean esGano() {
     		return estadoJuego == ESTADO.GANO;
     }

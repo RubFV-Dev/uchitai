@@ -4,18 +4,12 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.ScreenUtils;
-
-import io.github.rubfv.uchitai.DibujadoSeleccion.Animacion;
-import io.github.rubfv.uchitai.DibujadoSeleccion.Transicion;
 
 public class DibujadoJuego extends DibujadoGeneral {
 	protected class Animacion {
@@ -25,29 +19,29 @@ public class DibujadoJuego extends DibujadoGeneral {
 		private PUNTERIA msg;
 		private int id;
 		private int animEstado;
-		
+
 		Animacion() {
 			animMsg = 0;
 			animEstado = -1;
 		}
-		
+
 		public void setMsg(PUNTERIA msg, int id) {
 			this.msg = msg;
 			this.id = id;
 			animMsg = MAX_ANIM_MSG;
 		}
-		
+
 		public PUNTERIA getMsg() {
 			return msg;
 		}
-		
+
 		public int getId() {
 			return id;
 		}
-		
+
 		public void anim() {
 			if (animMsg > 0) animMsg--;
-			
+
 			if (animMsg == 0) {
 				animMsg = -1;
 				msg = null;
@@ -56,44 +50,44 @@ public class DibujadoJuego extends DibujadoGeneral {
 
 		public void animEstado() {
 			if (animEstado > 0) animEstado /= 1.0625f;
-			
+
 			if (animEstado == -1) {
 				animEstado = MAX_ANIM_ESTADO;
 				id = 0;
 				msg = null;
 			}
-			
+
 			if (animEstado <= 0.1f) {
 				animEstado = 0;
 			}
 		}
-		
-		public float relacionAnim() { 
+
+		public float relacionAnim() {
 			if (animMsg == -1) return 0;
 			return (float) (animMsg) / MAX_ANIM_MSG;
 		}
-		
+
 		public float relacionAnimEstado() {
 			if (animEstado == -1) return 0;
 			return (float)(MAX_ANIM_ESTADO - animEstado) / MAX_ANIM_ESTADO;
 		}
 	}
-	
+
 	protected final int TAM_COLORES = 6;
 	protected final float TAM_TECLA = 0.6f;
 	protected final float TIEMPO_TRANS = .8f;
-	
+
     protected Texture txtHudTeclas, txtBarras, txtFondoCombo, txtPrecision;
     protected Sprite sprHudTeclas, sprFondoTeclas, sprBarras, sprFondoCombo, sprPrecision;
     protected BitmapFont texto;
     protected CancionesCargadas canciones;
     protected Animacion anim;
-    
+
     protected Sprite portadaAct;
-    
+
     protected Color[] coloresNotas;
     protected Color colorCombo;
-    
+
     DibujadoJuego(DibujadoGeneral dib) {
     		this.canciones = canciones;
     		anim = new Animacion();
@@ -116,26 +110,26 @@ public class DibujadoJuego extends DibujadoGeneral {
 		txtBarras = new Texture(Gdx.files.internal("Hud/hud_barras.png"));
 		txtFondoCombo = new Texture(Gdx.files.internal("Hud/hud_fondo_combo.png"));
 		txtPrecision = new Texture(Gdx.files.internal("Hud/precision.png"));
-		
+
 		sprHudTeclas = new Sprite(txtHudTeclas);
 		sprFondoTeclas = new Sprite(txtHudTeclas, 1800, 400, 200, 200);
 		sprBarras = new Sprite(txtBarras);
 		sprFondoCombo = new Sprite(txtFondoCombo);
 		sprPrecision = new Sprite(txtPrecision);
-		
+
 		sprFondoTeclas.setSize(200, 200);
 		sprFondoTeclas.setScale(TAM_TECLA);
 		sprFondoTeclas.setColor(new Color(.5f, .5f, .5f, 0.35f));
-		
+
 		sprHudTeclas.setColor(new Color(.5f, .5f, .5f, 0.35f));
-		
+
 		sprFondoCombo.setOrigin(150, 150);
 
         texto.getData().scaleX = TAM_TXT.x;
 	}
-	
+
 	@Override
-    public void descargar(DibujadoGeneral nuevo) {		
+    public void descargar(DibujadoGeneral nuevo) {
 		//Limpieza de solo lo necesario
 		txtHudTeclas.dispose();
 		txtBarras.dispose();
@@ -144,7 +138,7 @@ public class DibujadoJuego extends DibujadoGeneral {
 
 	    texto.dispose();
     	}
-	
+
 	@Override
     public void dibujar() {
 		UchitaiGame juego = (UchitaiGame)Gdx.app.getApplicationListener();
@@ -154,40 +148,40 @@ public class DibujadoJuego extends DibujadoGeneral {
 		float textoPres = anim.relacionAnim();
 		float ratioCombo = 0;
         frames = Gdx.graphics.getFrameId();
-        
+
         ratioCombo = (float)gestor.getCombo() / 100;
         if (ratioCombo > 1) ratioCombo = 1;
-		
+
 		dibujadoPantalla.begin();
-        
+
 		//Fondo de la canción
         sprFondo.setPosition(
-        		(Coord.RESOL_X - sprFondo.getWidth()) / 2, 
+        		(Coord.RESOL_X - sprFondo.getWidth()) / 2,
         		(Coord.RESOL_Y - sprFondo.getHeight()) / 2
         	);
         sprFondo.draw(dibujadoPantalla);
-        
+
         dibujadoPantalla.end();
-        
+
         //Activa el blend para hacer el fondo oscuro
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-        
+
         	figurasPantalla.begin();
 
         figurasPantalla.set(ShapeType.Filled);
         figurasPantalla.setColor(new Color(0f, 0f, 0f, 0.65f));
         figurasPantalla.rect(0, 0, Coord.RESOL_X, Coord.RESOL_Y);
-        
+
         //Linea enmedio de la pantalla que no quiero quitar, así que la comenté
 //        figurasPantalla.setColor(Color.BLACK);
 //        figurasPantalla.rect(Coord.RESOL_X / 2 -1, 0, 2, Coord.RESOL_Y);
-            
+
         figurasPantalla.end();
-        
+
         //Desactiva el blend
         Gdx.gl.glDisable(GL20.GL_BLEND);
-        
+
         /*---------- Dibujado fondo teclas en QWERTY ----------*/
         dibujadoPantalla.begin();
         for (int y = 0; y < 3; y++) {
@@ -203,7 +197,7 @@ public class DibujadoJuego extends DibujadoGeneral {
         		case 2:	limX = 7;	break;
         		}
         		espacio.x += 66f * y;
-        		
+
 	        	//Primera fila de teclas
 	        	for (int x = 0; x < limX; x++, espacio.x += 230 * TAM_TECLA) {
 	        		boolean presionado = input.teclaPresionada(Nota.getKeyboardKeycode(x, y) - Input.Keys.A);
@@ -212,7 +206,7 @@ public class DibujadoJuego extends DibujadoGeneral {
 
 	        		posX = keycode + 36;
 	        		posX -= 'A';
-	        		
+
 	        		//Obtiene la posición de la letra dentro de la imagen
 	        		while (posX >= 10) {
 	        			posX -= 10;
@@ -226,7 +220,7 @@ public class DibujadoJuego extends DibujadoGeneral {
         			sprHudTeclas.setScale(TAM_TECLA);
 	        		sprFondoTeclas.setPosition(espacio.x, espacio.y);
 	        		sprFondoTeclas.draw(dibujadoPantalla);
-	        		
+
 	        		//Mostrar letra de la tecla
 	        		sprHudTeclas.setRegion(posX * 200, posY * 200, 200, 200);
 	        		sprHudTeclas.setSize(200,  200);
@@ -250,21 +244,21 @@ public class DibujadoJuego extends DibujadoGeneral {
 	    		case 2:	limX = 7;	break;
 	    		}
 	    		espacio.x += 66f * y;
-	    		
+
 	        	//Primera fila de teclas
 	        	for (int x = 0; x < limX; x++, espacio.x += 230 * TAM_TECLA) {
 	        		int keycode = Nota.getKeyboardKeycode(x, y);
 	        		int posX = 0, posY = 0;
-	
+
 	        		posX = keycode + 36;
 	        		posX -= 'A';
-	        		
+
 	        		//Obtiene la posición de la eltra dentro de la imagen
 	        		while (posX >= 10) {
 	        			posX -= 10;
 	        			posY++;
 	        		}
-	        		
+
 	        		//busqueda notas en pantalla que deben ser presionadas
 	        		for (Nota n: gestor.getNotasActivas()) {
 	        			if (n.getTecla() == keycode) {
@@ -273,7 +267,7 @@ public class DibujadoJuego extends DibujadoGeneral {
 	        				float trans = 1;
 	        				Color c = new Color(coloresNotas[n.getId() % TAM_COLORES]);
 	        				if (tamPresionado < 0) tamPresionado = 0;
-	        				
+
 	        				//Animación aparición
 	        				if (relacionAp > TIEMPO_TRANS) {
 	        					trans = 1f - (relacionAp - TIEMPO_TRANS) / (1f - TIEMPO_TRANS);
@@ -282,14 +276,14 @@ public class DibujadoJuego extends DibujadoGeneral {
 	        				if (relacionAp < -Gestor.getMargenError() * .15f) {
 	        					float ajuste = -(relacionAp + Gestor.getMargenError() * .15f) / (Gestor.getMargenError() - Gestor.getMargenError() * .15f);
 	        					c.lerp(Color.RED, ajuste);
-	        					
+
 	        					//Desaparecer tecla
 	        					if (ajuste > .3f) {
 	        						trans = 1f - (ajuste - 0.3f) / 0.7f;
 	        						if (trans < 0) trans = 0;
 	        					}
 	        				}
-	        				
+
 	        				//fondo
 		        			sprFondoTeclas.setColor(c);
         					sprFondoTeclas.setAlpha(trans);
@@ -305,7 +299,7 @@ public class DibujadoJuego extends DibujadoGeneral {
 	        				sprHudTeclas.setAlpha(trans);
 		    	        		sprHudTeclas.setScale(TAM_TECLA);
 		    	        		sprHudTeclas.draw(dibujadoPantalla);
-	
+
 		    	        		sprHudTeclas.setRegion(1600, 400, 200, 200);
 		    	        		sprHudTeclas.setSize(200,  200);
 		    	        		sprHudTeclas.setOrigin(100, 100);
@@ -316,7 +310,7 @@ public class DibujadoJuego extends DibujadoGeneral {
 		    	        		sprHudTeclas.draw(dibujadoPantalla);
 	        			}
 	        		}
-	        		
+
 	        		//Nota presionada
 	        		if (input.teclaPresionada(keycode - Input.Keys.A)) {
 	        			sprFondoTeclas.setColor(Color.WHITE);
@@ -337,7 +331,7 @@ public class DibujadoJuego extends DibujadoGeneral {
 	        		}
 	        	}
         }
-        
+
         //Texto de retroalimentación pal player omgg
         if (textoPres > 0) {
         		Color c = new Color();
@@ -345,7 +339,7 @@ public class DibujadoJuego extends DibujadoGeneral {
         		float trans = 1;
         		float empujeY = 0;
         		int tipo = -1;
-        		
+
         		//Animación aparecer
         		if (animacion < 0.15f) {
         			trans = animacion / 0.15f;
@@ -356,7 +350,7 @@ public class DibujadoJuego extends DibujadoGeneral {
         			trans = 1f - (animacion - 0.9f) / 0.1f;
         			empujeY = (float)Math.sqrt(1f - trans) * 20;
         		}
-        		
+
         		switch (anim.getMsg()) {
         		case PERFECT:	tipo = 0;	break;
         		case GREAT:		tipo = 1;	break;
@@ -364,11 +358,11 @@ public class DibujadoJuego extends DibujadoGeneral {
         		case BAD:		tipo = 3;	break;
         		case null:		tipo = -1;	break;
         		}
-        		
+
         		//ajuste de colores
         		if (tipo != 3) {
             		c.set(coloresNotas[anim.getId() % TAM_COLORES], trans);
-        			c.lerp(Color.WHITE, (float)tipo / 6);        			
+        			c.lerp(Color.WHITE, (float)tipo / 6);
         		}
         		else {
         			c.set(Color.RED);
@@ -385,7 +379,7 @@ public class DibujadoJuego extends DibujadoGeneral {
     				3 * (Coord.RESOL_Y - sprPrecision.getHeight()) / 5 + empujeY
         		);
         		sprPrecision.draw(dibujadoPantalla);
-        		
+
         		if (tipo != 3) {
             		colorCombo.set(Color.WHITE);
             		colorCombo.lerp(c, ratioCombo * .65f);
@@ -397,13 +391,13 @@ public class DibujadoJuego extends DibujadoGeneral {
 
         //------ Fondo combo juegongo ------
         //Datos iniciales de Barras
-        
+
         //Barra tiempo de juego
         sprBarras.setRegion(0, 0, 1280, 460);
         sprBarras.setSize(Coord.RESOL_Y, 460);
         sprBarras.setOrigin(0, 230);
         sprBarras.setRotation(90);
-        
+
         //Fondo tiempo nivelelel
         sprBarras.setScale(1f, 0.136f);
         sprBarras.setPosition(Coord.RESOL_X - 28.75f, -230);
@@ -414,13 +408,13 @@ public class DibujadoJuego extends DibujadoGeneral {
         sprBarras.setPosition(Coord.RESOL_X - 28.75f, -230);
         sprBarras.setColor(Color.WHITE);
         sprBarras.draw(dibujadoPantalla);
-        
+
         //Iniciar barra de vida
         sprBarras.setRegion(0, 0, 1280, 460);
         sprBarras.setSize(1280, 460);
         sprBarras.setOrigin(0, 230);
         sprBarras.setRotation(0);
-        
+
         //Fondo oscuro de vida
         sprBarras.setColor(Color.BLACK);
         sprBarras.setScale(0.5f, 0.145f);
@@ -430,7 +424,7 @@ public class DibujadoJuego extends DibujadoGeneral {
         sprBarras.setColor(new Color(.7968f, .2617f, .7695f, 1));
         sprBarras.setScale(0.5f * (1f - ((GestorJuego)gestor).getRelacionVida()), 0.125f);
         sprBarras.draw(dibujadoPantalla);
-        
+
         //Datos iniciales de Esquinita de vida
         sprBarras.setRegion(0, 460, 330, 460);
         sprBarras.setSize(460, 460);
@@ -447,12 +441,12 @@ public class DibujadoJuego extends DibujadoGeneral {
         sprBarras.setScale(0.125f, 0.125f);
         sprBarras.setPosition(335 + 640 * (1f - ((GestorJuego)gestor).getRelacionVida()), Coord.RESOL_Y - 350);
         sprBarras.draw(dibujadoPantalla);
-        
+
         //Fondo circular de combo
         sprFondoCombo.setColor(colorCombo);
         sprFondoCombo.setAlpha(1);
         sprFondoCombo.setRotation((frames / 4) % 360);
-        
+
         //texto combo juego
         //Animación brincos ritmo
         if (textoPres > 0) {
@@ -464,7 +458,7 @@ public class DibujadoJuego extends DibujadoGeneral {
         		}
 	        	texto.getData().scaleY = TAM_TXT.y + TAM_TXT.y * brinco / 4;
 	        	texto.getData().scaleX = TAM_TXT.x + TAM_TXT.x * brinco / 4;
-	        	
+
 	        	sprFondoCombo.setScale(1f + brinco/ 8 * ratioCombo);
         }
         else {
@@ -497,7 +491,7 @@ public class DibujadoJuego extends DibujadoGeneral {
     			dibujadoPantalla, renderTexto,
     			85, Coord.RESOL_Y - 210 + 75 * texto.getData().scaleY
     		);
-			
+
 		//Dibujar sombra texto puntaje
         texto.getData().scaleY = TAM_TXT.y * .5f;
         texto.getData().scaleX = TAM_TXT.x * .5f;
@@ -560,31 +554,31 @@ public class DibujadoJuego extends DibujadoGeneral {
     			dibujadoPantalla, renderTexto,
     			20, 72
     		);
-        
+
 		anim.anim();
         dibujadoPantalla.end();
-        
+
         //Pantalla de muerte
         if (gestor.esPerdio()) {
             anim.animEstado();
-            
+
         		Gdx.gl.glEnable(GL20.GL_BLEND);
             Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-            
+
             	figurasPantalla.begin();
 
             figurasPantalla.set(ShapeType.Filled);
             figurasPantalla.setColor(new Color(1f, 0f, 0f, anim.relacionAnimEstado() * 0.65f));
             figurasPantalla.rect(0, 0, Coord.RESOL_X, Coord.RESOL_Y);
-                
+
             figurasPantalla.end();
-            
+
             //Desactiva el blend
             Gdx.gl.glDisable(GL20.GL_BLEND);
 
           //Barra, presiona cualquier tecla para regresar
 	    		figurasPantalla.begin();
-	
+
 	        figurasPantalla.set(ShapeType.Filled);
 	        figurasPantalla.setColor(new Color(0.05f, 0f, 0.075f, 0.25f));
 	        //Fin del juego
@@ -596,9 +590,9 @@ public class DibujadoJuego extends DibujadoGeneral {
 	        		Coord.RESOL_X / 2, 290,
 	        		-(Coord.RESOL_X / 2) * anim.relacionAnimEstado(), 70
 			);
-			
+
 	        figurasPantalla.end();
-            
+
             dibujadoPantalla.begin();
 	    		//Dibujar texto FIN DE TODITO
             texto.getData().scaleY = TAM_TXT.y;
@@ -626,7 +620,7 @@ public class DibujadoJuego extends DibujadoGeneral {
         			dibujadoPantalla, renderTexto,
         			Coord.RESOL_X / 2 - 400, Coord.RESOL_Y / 2 + 75
         		);
-	    		
+
 	    		//Texto Salir de la pantalla
             renderTexto.setText(
         			texto, "FIN DEL JUEGO",
@@ -656,9 +650,9 @@ public class DibujadoJuego extends DibujadoGeneral {
         		InputGeneral inp = (InputGeneral)Gdx.input.getInputProcessor();
             anim.animEstado();
             float animX = -(1f - anim.relacionAnimEstado()) * Coord.RESOL_Y;
-        		
+
             figurasPantalla.begin();
-        	
+
 	        figurasPantalla.set(ShapeType.Filled);
 	        figurasPantalla.setColor(new Color(0.05f, 0f, 0.075f, 0.25f));
 	        //Fin del juego
@@ -682,15 +676,15 @@ public class DibujadoJuego extends DibujadoGeneral {
                 );
             }
             //Animación escribir si no hay texto
-            else if (inp.getAuxStr().isEmpty() && frames % 60 > 0 && frames % 60 < 30){
+            else if (inp.getLevelName().isEmpty() && frames % 60 > 0 && frames % 60 < 30){
                 figurasPantalla.rect(
                 		Coord.RESOL_X / 2 - 200, Coord.RESOL_Y - 950 + animX,
                     	400, 50
                 );
             }
-			
+
 	        figurasPantalla.end();
-	        
+
 	        dibujadoPantalla.begin();
 	        //Texto de completado
             texto.getData().scaleY = TAM_TXT.y;
@@ -772,7 +766,7 @@ public class DibujadoJuego extends DibujadoGeneral {
         			dibujadoPantalla, renderTexto,
         			Coord.RESOL_X / 2 - 350, Coord.RESOL_Y - 500 + animX
         		);
-	    		
+
 	    		//---------- Texto total de notas ----------
 	    		//Literalmente el texto
             renderTexto.setText(
@@ -816,7 +810,7 @@ public class DibujadoJuego extends DibujadoGeneral {
         			dibujadoPantalla, renderTexto,
         			Coord.RESOL_X / 2 - 350, Coord.RESOL_Y - 700 + animX
         		);
-		    
+
 		    //---------- Texto mejor combo ----------
 	    		//Literalmente el texto
 	        renderTexto.setText(
@@ -850,7 +844,7 @@ public class DibujadoJuego extends DibujadoGeneral {
         			Coord.RESOL_X / 2 - 200, Coord.RESOL_Y - 880 + animX
         		);
         		renderTexto.setText(
-        			texto, inp.getAuxStr(),
+        			texto, inp.getLevelName(),
         			new Color(1, 0.9f, 0.95f, 1), 400,
         			Align.center, false
         		);
@@ -861,7 +855,7 @@ public class DibujadoJuego extends DibujadoGeneral {
 		    dibujadoPantalla.end();
         }
 	}
-	
+
 	public void obtenerPunteria(PUNTERIA msg, int id) {
 		anim.setMsg(msg, id);
 	}
