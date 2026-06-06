@@ -858,6 +858,18 @@ public class DibujadoJuego extends DibujadoGeneral {
         			dibujadoPantalla, renderTexto,
         			Coord.RESOL_X / 2 - 200, Coord.RESOL_Y - 930 + animX
         		);
+        		//Pista para que ya se salga el playa
+        		if (!inp.getAuxStr().isEmpty() && !inp.estaEscribiendo()) {
+            		renderTexto.setText(
+            			texto, "Presiona ENTER para regresar",
+            			new Color(1, 0.9f, 0.95f, 1), 400,
+            			Align.center, false
+            		);
+            		texto.draw(
+            			dibujadoPantalla, renderTexto,
+            			Coord.RESOL_X / 2 - 200, Coord.RESOL_Y - 1000 + animX
+            		);
+        		}
 		    dibujadoPantalla.end();
         }
 	}
