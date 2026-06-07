@@ -29,6 +29,9 @@ public class InputGeneral extends InputAdapter {
         mouse = m;
         LevelName = "";
         escribiendo = false;
+        
+        SongFile = null;
+        BackgroundFile = null;
     }
 
     public void setPantallaAct(PANTALLA pantalla) {
@@ -74,8 +77,12 @@ public class InputGeneral extends InputAdapter {
                             case Input.Keys.SPACE:
                                 if (!((DibujadoSeleccion) juego.getDibujado()).getAniadir()) {
                                     juego.setPantallaAct(JUEGO);
-                                } else if (!LevelName.isEmpty()) {
-                                    CancionesCargadas.subirCancion(getLevelName(), SongFile, BackgroundFile);
+                                }
+                                else if (!LevelName.isEmpty()) {
+	                                	if (CancionesCargadas.subirCancion(getLevelName(), SongFile, BackgroundFile)) {
+	                            			juego.getCanciones().setIndiceCancion(juego.getCanciones().getIndiceCancion() + 1);
+	                                     limpiarArchivos();
+	                            		}
                                 }
                                 break;
 
@@ -199,16 +206,6 @@ public class InputGeneral extends InputAdapter {
         if (keycode >= Input.Keys.A && keycode <= Input.Keys.Z) {
             teclas[keycode - Input.Keys.A] = false;
         }
-
-        // para cuando se este en el juego y el usuario suelte la tecla (para notas
-        // sostenidas)
-        if (juego.getPantallaAct() == JUEGO) {
-            if (keycode >= Input.Keys.A && keycode <= Input.Keys.Z) {
-                if (juego.getGestorPartida() != null) {
-                    // juego.getGestorPartida().procesarTeclaArriba(keycode);
-                }
-            }
-        }
         return false;
     }
 
@@ -301,9 +298,11 @@ public class InputGeneral extends InputAdapter {
                                 }
 
                                 // Guardar TODITO
-                                if (mouse.dentroDe(Coord.RESOL_X / 2 - 30, Coord.RESOL_X / 2 + 30, 75, 135)
-                                        && !LevelName.isEmpty()) {
-                                    CancionesCargadas.subirCancion(getLevelName(), SongFile, BackgroundFile);
+                                if (mouse.dentroDe(Coord.RESOL_X / 2 - 30, Coord.RESOL_X / 2 + 30, 75, 135) && !LevelName.isEmpty()) {
+                                		if (CancionesCargadas.subirCancion(getLevelName(), SongFile, BackgroundFile)) {
+                                			juego.getCanciones().setIndiceCancion(juego.getCanciones().getIndiceCancion() + 1);
+                                         limpiarArchivos();
+                                		}
                                 }
                             }
                             return true;
@@ -413,5 +412,19 @@ public class InputGeneral extends InputAdapter {
 
     public boolean estaEscribiendo() {
         return escribiendo;
+    }
+    
+    public boolean existeSong() {
+    		return SongFile != null;
+    }
+
+    public boolean existeBackground() {
+    		return BackgroundFile != null;
+    }
+    
+    public void limpiarArchivos() {
+    		BackgroundFile = null;
+        SongFile = null;
+        LevelName = "";
     }
 }

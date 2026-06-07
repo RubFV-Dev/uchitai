@@ -55,6 +55,17 @@ public class CancionesCargadas {
     public int getIndiceCancion() {
         return indiceCancionAct;
     }
+    
+    public void setIndiceCancion(int i) {
+    		indiceCancionAct = i;
+    }
+    
+    CancionesCargadas() {
+    		cancionActual = null;
+    		indiceCancionAct = -1;
+    		txtFondo = null;
+    		sprFondo = null;
+    }
 
     public static void cargarListaCanciones() {
         if (!dirCanciones.exists()) {
@@ -143,24 +154,34 @@ public class CancionesCargadas {
             String ruta = canciones[i].path() + "/" + canciones[i].name();
             // Iniciar canción y poner fondo
             try {
+            		boolean portada = false;
                 cancionActual = Gdx.audio.newMusic(Gdx.files.local(ruta + ".mp3"));
 
                 // cargar el fondo
-                try {
-                    txtFondo = new Texture(Gdx.files.local(ruta + ".png"));
-                } catch (Exception noF) {
-                    try {
-                        txtFondo = new Texture(Gdx.files.local(ruta + ".jpeg"));
-                    } catch (Exception noFoto) {
-                        // Esto no debería existir, pero lo dejo por flojo
-                        Pixmap noFondo = new Pixmap(2, 2, Pixmap.Format.RGBA8888);
-                        noFondo.setColor(new Color(0, 0, 0, 0));
-                        noFondo.fill();
-
-                        txtFondo = new Texture(noFondo);
-                        noFondo.dispose();
-                    }
-                }
+                if (Gdx.files.local(ruta + ".png").exists()) {
+	                	txtFondo = new Texture(Gdx.files.local(ruta + ".png"));
+	    				portada = true;
+				}
+				//un jpeg
+				else if (!portada && Gdx.files.local(ruta + ".jpeg").exists()) {
+					txtFondo = new Texture(Gdx.files.local(ruta + ".jpeg"));
+	    				portada = true;
+				}
+				//el primo malvado de png
+				else if (!portada && Gdx.files.local(ruta + ".jpg").exists()) {
+					txtFondo = new Texture(Gdx.files.local(ruta + ".jpg"));
+	    				portada = true;
+				}
+				//Ya ni pedo, ahí muere
+				else {
+		    	    		// Esto no debería existir, pero lo dejo por flojo
+		    	    		Pixmap noFondo = new Pixmap(2, 2, Pixmap.Format.RGBA8888);
+		    	    		noFondo.setColor(new Color(0, 0, 0, 0));
+		    	    		noFondo.fill();
+	
+		    	    		txtFondo = new Texture(noFondo);
+		    	    		noFondo.dispose();
+				}
 
                 sprFondo = new Sprite(txtFondo);
             } catch (Exception noSong) {
@@ -219,14 +240,15 @@ public class CancionesCargadas {
         txtFondo.dispose();
     }
 
-    static public void subirCancion(String newName, FileHandle song, FileHandle png){
-        if (Objects.equals(newName, "") || !song.exists() || !png.exists()) {
-            return;
+    static public boolean subirCancion(String newName, FileHandle song, FileHandle png){
+        if (Objects.equals(newName, "") || song == null || png == null) {
+            return false;
         }
 
         FileHandle newDir = dirCanciones.child(newName);
-        if (newDir.isDirectory()){
-            return;
+        if (newDir.isDirectory() || !song.exists() || !png.exists() || !song.extension().equals(".mp3") ||
+        		!png.extension().equals(".png") || !png.extension().equals(".jpg") || !png.extension().equals(".jpeg")){
+            return false;
         }
         newDir.mkdirs();
         String newNameSong = newName + "." + song.extension();
@@ -240,5 +262,7 @@ public class CancionesCargadas {
         cargarListaCanciones();
         DibujadoSeleccion sel = (DibujadoSeleccion) juego.getDibujado();
         sel.recargarTexturas();
+        
+        return true;
     }
 }

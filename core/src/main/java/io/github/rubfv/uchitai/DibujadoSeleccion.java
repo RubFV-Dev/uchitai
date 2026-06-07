@@ -199,7 +199,6 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 
     private Texture[] txtPortadas;
     private Sprite[] sprPortadas;
-    private Sprite portadaAct;
     private boolean tieneMapa;
     private boolean pantallaAniadir;
     private List<String> puntuaciones;
@@ -269,57 +268,56 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 	public void recargarTexturas() {
 		int l = canciones.getIndiceCancion();
 
+		//Limpiar las portadas anteriores
         if (txtPortadas != null){
             for (int i = 0; i < txtPortadas.length; i++) {
                 if(i < l - MAX_PORTADAS / 2 || i > l + MAX_PORTADAS / 2 ){
-                    if (txtPortadas[i] != null){
+                		//Descarga la portada no usada de la memoria para que no muera la RAM
+                    if (txtPortadas[i] != null){		//Se limpia lo demás
                         txtPortadas[i].dispose();
+                        txtPortadas[i] = null;
+                        sprPortadas[i] = null;
                     }
                 }
             }
         }
 
-       Texture[] nuevasTxt = new Texture[canciones.size()];
-        Sprite[] nuevoSpr = new Sprite[canciones.size()];
-
-        if (txtPortadas != null){
-            for (int i = 0; i < txtPortadas.length && i < nuevasTxt.length; i++) {
-                nuevasTxt[i] =txtPortadas[i];
-                nuevoSpr[i] = sprPortadas[i];
-            }
-        }
-
-        txtPortadas = nuevasTxt;
-        sprPortadas = nuevoSpr;
-
 		for (int i = 0, j = canciones.getIndiceCancion() - MAX_PORTADAS / 2; i < MAX_PORTADAS; i++, j++) {
 			if (j >= 0 && j < canciones.size() && txtPortadas[j] == null) {
 				if (j != canciones.size() - 1) {
 					Coord escala = new Coord(1, 1);
-					Coord escSprite = new Coord(1, 1);
 					Texture textura;
 					Sprite sprite;
 					String ruta = canciones.rutaCancion(j) + "/" + canciones.nombreCancion(j);
+					boolean portada = false;
 					System.out.println("CARGADO: " + ruta);
 
 		    			//cargar el fondo
-		        		try {
-		        			textura = new Texture(Gdx.files.local(ruta + ".png"));
-			    	    }
-			    	    catch (Exception noF) {
-			    	    		try {
-			    	    			textura = new Texture(Gdx.files.local(ruta + ".jpeg"));
-		        		    }
-			    	    		catch (Exception noFoto) {
-				    	    		// Esto no debería existir, pero lo dejo por flojo
-				    	    		Pixmap noFondo = new Pixmap(2, 2, Pixmap.Format.RGBA8888);
-				    	    		noFondo.setColor(new Color(0, 0, 0, 0));
-				    	    		noFondo.fill();
-
-				    	    		textura = new Texture(noFondo);
-				    	    		noFondo.dispose();
-			    	    		}
-			    	    }
+					//Busca un png
+					if (Gdx.files.local(ruta + ".png").exists()) {
+	        				textura = new Texture(Gdx.files.local(ruta + ".png"));
+	        				portada = true;
+					}
+					//un jpeg
+					else if (!portada && Gdx.files.local(ruta + ".jpeg").exists()) {
+    	    					textura = new Texture(Gdx.files.local(ruta + ".jpeg"));
+    	    					portada = true;
+					}
+					//el primo malvado de png
+					else if (!portada && Gdx.files.local(ruta + ".jpg").exists()) {
+    	    					textura = new Texture(Gdx.files.local(ruta + ".jpg"));
+    	    					portada = true;
+					}
+					//Ya ni pedo, ahí muere
+					else {
+			    	    		// Esto no debería existir, pero lo dejo por flojo
+			    	    		Pixmap noFondo = new Pixmap(2, 2, Pixmap.Format.RGBA8888);
+			    	    		noFondo.setColor(new Color(0, 0, 0, 0));
+			    	    		noFondo.fill();
+		
+			    	    		textura = new Texture(noFondo);
+			    	    		noFondo.dispose();
+					}
 
 		        		txtPortadas[j] = (textura);
 		        		//Imagen reescalada para caber en el selector
@@ -330,8 +328,6 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 		        		sprite.setRegion(0, textura.getHeight() / 4, textura.getWidth(), textura.getHeight() / 2);
 		        		sprite.setScale(escala.x, escala.y);
 		        		sprPortadas[j] = (sprite);
-
-		        		//revisa si existe mapa para el nivel
 				}
 				else {
 					Pixmap noFondo = new Pixmap(2, 2, Pixmap.Format.RGBA8888);
@@ -534,7 +530,15 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 
         //Barras de puntuaciones
         if (puntuaciones != null) {
-        		float animX = trans.relacionAnim() * 800 + Coord.RESOL_X * anim.relacionAnim();
+        		float animX = Coord.RESOL_X * anim.relacionAnim();
+        		//Animación de salida
+        		if (transSalida) {
+        			animX += trans.relacionAnim() * 800;
+        		}
+        		//De entrada
+        		if (transEntrada) {
+        			animX += (1f - trans.relacionAnim()) * 800;
+        		}
 	        for (int i = puntuaciones.size() - 1, j = 0; i >= 0 && j < MAX_PUNTUACIONES; i--, j++) {
 	        		//Dibujar barra de puntuación
 	            sprBarras.setRegion(0, 0, 1280, 460);
@@ -1030,7 +1034,8 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 	    			cursorEncima = true;
 	    		}
 	    		else animBoton = 0;
-	    		sprBotones.setRegion(300, 150, 150, 150);
+            if (!inp.existeSong())	sprBotones.setRegion(300, 150, 150, 150);
+            else						sprBotones.setRegion(450, 150, 150, 150);
 	    		sprBotones.setSize(150,  150);
 	    		sprBotones.setOrigin(75, 75);
 	    		sprBotones.setPosition(c.x, c.y);
@@ -1059,7 +1064,8 @@ public class DibujadoSeleccion extends DibujadoGeneral {
 	    			cursorEncima = true;
 	    		}
 	    		else animBoton = 0;
-	    		sprBotones.setRegion(300, 150, 150, 150);
+            if (!inp.existeBackground())	sprBotones.setRegion(300, 150, 150, 150);
+            else							sprBotones.setRegion(450, 150, 150, 150);
 	    		sprBotones.setSize(150,  150);
 	    		sprBotones.setOrigin(75, 75);
 	    		sprBotones.setPosition(c.x, c.y);
@@ -1124,7 +1130,9 @@ public class DibujadoSeleccion extends DibujadoGeneral {
     public void setAniadir(boolean b) {
     		pantallaAniadir = b;
     		if (!b) {
+    			InputGeneral inp = (InputGeneral)Gdx.input.getInputProcessor();
         		trans = new Transicion(false);
+        		inp.limpiarArchivos();
     		}
     }
 
