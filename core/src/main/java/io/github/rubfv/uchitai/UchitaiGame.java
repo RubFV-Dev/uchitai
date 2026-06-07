@@ -149,7 +149,8 @@ public class UchitaiGame extends ApplicationAdapter {
                     nuevo = new DibujadoJuego(dibujado);
                     break;
                 case EDICION:
-                    gestor = new GestorEditor(new Nivel(), canciones);
+                    nivelCargado = cargarNivelDesdeDisco(canciones.getIndiceCancion());
+                    gestor = new GestorEditor(nivelCargado, canciones);
                     gestor.iniciar();
                     // Todo TEMA DE DIBUJADO
                     nuevo = new DibujadoEdicion(dibujado);

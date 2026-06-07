@@ -128,7 +128,7 @@ public class InputGeneral extends InputAdapter {
                             default:
                                 if (keycode >= Input.Keys.A && keycode <= Input.Keys.Z) {
                                     if (juego.getGestorPartida() != null) {
-                                        juego.getGestorPartida().procesarTeclaPresionada(keycode);
+                                        ((GestorEditor)juego.getGestorPartida()).procesarTeclaPresionada(keycode, Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT));
                                     }
                                 }
                                 break;
@@ -137,6 +137,35 @@ public class InputGeneral extends InputAdapter {
                             case Input.Keys.ESCAPE:
                                 juego.setPantallaAct(PANTALLA.SELECCION);
                                 break;
+                            case Input.Keys.SPACE:
+                            		if (juego.getCanciones().getCancionActual().isPlaying()) {
+                                		juego.getCanciones().getCancionActual().pause();
+                            		}
+                            		else {
+                                		juego.getCanciones().getCancionActual().play();
+                            		}
+                            		break;
+                            		
+                            	//Retroceder
+                            case Input.Keys.LEFT:
+                            		((GestorEditor)(juego.getGestorPartida())).retroceder();
+                            		break;
+                            	
+                            	//Avanzar
+                            case Input.Keys.RIGHT:
+                            		((GestorEditor)(juego.getGestorPartida())).avanzar();
+                            		break;
+                            		
+
+                            	//Más brinco
+                            case Input.Keys.UP:
+                            		((GestorEditor)(juego.getGestorPartida())).aumentarBrinco();
+                            		break;
+                            	
+                            	//Menos brinco
+                            case Input.Keys.DOWN:
+                            		((GestorEditor)(juego.getGestorPartida())).reducirBrinco();
+                            		break;
                         }
                         break;
                 }
@@ -309,10 +338,16 @@ public class InputGeneral extends InputAdapter {
 
                         case JUEGO:
                             if (mouse.dentroDe(Coord.RESOL_X / 2 - 200, Coord.RESOL_X / 2 + 200,
-                                    Coord.RESOL_Y - 950, Coord.RESOL_Y - 900)) {
+                                    Coord.RESOL_Y - 950, Coord.RESOL_Y - 900) && ((GestorJuego)juego.getGestorPartida()).esGano()) {
                                 escribiendo = true;
                             }
                             break;
+                            
+                        case EDICION:
+                        		if (mouse.dentroDe(Coord.RESOL_X - 57.5f, Coord.RESOL_X, 0, Coord.RESOL_Y)) {
+                        			((GestorEditor)juego.getGestorPartida()).ajustarTiempo(mouse.y / Coord.RESOL_Y);
+                            }
+                        		break;
                     }
                     break;
             }

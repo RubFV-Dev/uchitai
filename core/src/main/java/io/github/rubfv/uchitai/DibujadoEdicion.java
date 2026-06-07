@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.badlogic.gdx.utils.Align;
 
 public class DibujadoEdicion extends DibujadoGeneral {
@@ -63,13 +64,11 @@ public class DibujadoEdicion extends DibujadoGeneral {
 	@Override
     public void dibujar() {
 		UchitaiGame juego = (UchitaiGame)Gdx.app.getApplicationListener();
-		Gestor gestor = juego.getGestorPartida();
+		GestorEditor gestor = (GestorEditor)juego.getGestorPartida();
 		InputGeneral input = (InputGeneral)Gdx.input.getInputProcessor();
 		GlyphLayout renderTexto = new GlyphLayout();
-		float animBrincos;
+		float tiempoAct = gestor.getTiempoAct();
         frames = Gdx.graphics.getFrameId();
-
-        animBrincos = (float)(frames % bmp) / bmp;
 		
 		dibujadoPantalla.begin();
         
@@ -114,7 +113,8 @@ public class DibujadoEdicion extends DibujadoGeneral {
         		
 	        	//Primera fila de teclas
 	        	for (int x = 0; x < limX; x++) {
-	        		boolean presionado = input.teclaPresionada(Nota.getKeyboardKeycode(x, y) - Input.Keys.A);
+	        		int keycode = Nota.getKeyboardKeycode(x, y);
+	        		boolean presionado = input.teclaPresionada(keycode - Input.Keys.A);
 	        		int posX = 0, posY = 0;
 
 	        		//Color lindo
@@ -152,6 +152,59 @@ public class DibujadoEdicion extends DibujadoGeneral {
 	        		sprHudTeclas.setScale(TAM_TECLA);
 	        		sprHudTeclas.draw(dibujadoPantalla);
 	        		
+	        		for (java.util.List<Nota> lista: gestor.getNotas(gestor.getTiempoAct(), Gestor.TIEMPO_APARICION).values()) {
+	        			for (Nota n: lista) {
+		        			if (n.getTecla() == keycode && n.getTiempoInicio() - Gestor.TIEMPO_APARICION < tiempoAct && n.getTiempoInicio() > tiempoAct - Gestor.TIEMPO_APARICION) {
+		        				final float TIEMPO_TRANS = 0.8f;
+		        				float relacionAp = n.getRelacionAparecer(gestor.getTiempoAct());
+		        				float tamPresionado = relacionAp * TAM_TECLA * 1.8f;
+		        				float trans = 1;
+		        				Color c = new Color(Color.WHITE);
+		        				if (tamPresionado < 0) tamPresionado = 0;
+		        				
+		        				//Animación aparición
+		        				if (relacionAp > TIEMPO_TRANS) {
+		        					trans = 1f - (relacionAp - TIEMPO_TRANS) / (1f - TIEMPO_TRANS);
+		        				}
+		        				//Animación desaparece
+		        				if (relacionAp < -Gestor.getMargenError() * .15f) {
+		        					float ajuste = -(relacionAp + Gestor.getMargenError() * .15f) / (Gestor.getMargenError() - Gestor.getMargenError() * .15f);
+
+		        					//Desaparecer tecla
+		        					if (ajuste > .3f) {
+		        						trans = 1f - (ajuste - 0.3f) / 0.7f;
+		        						if (trans < 0) trans = 0;
+		        					}
+		        				}
+		        				
+		        				//fondo
+			        			sprFondoTeclas.setColor(c);
+	        					sprFondoTeclas.setAlpha(trans);
+			        			sprFondoTeclas.setScale(TAM_TECLA);
+			    	        		sprFondoTeclas.setPosition(espacio.x, espacio.y);
+			    	        		sprFondoTeclas.draw(dibujadoPantalla);
+			    	        		//Mostrar letra de la tecla
+			    	        		sprHudTeclas.setRegion(posX * 200, posY * 200, 200, 200);
+			    	        		sprHudTeclas.setSize(200,  200);
+			    	        		sprHudTeclas.setOrigin(100, 100);
+			    	        		sprHudTeclas.setPosition(espacio.x, espacio.y);
+			    	        		sprHudTeclas.setColor(c);
+		        				sprHudTeclas.setAlpha(trans);
+			    	        		sprHudTeclas.setScale(TAM_TECLA);
+			    	        		sprHudTeclas.draw(dibujadoPantalla);
+
+			    	        		sprHudTeclas.setRegion(1600, 400, 200, 200);
+			    	        		sprHudTeclas.setSize(200,  200);
+			    	        		sprHudTeclas.setOrigin(100, 100);
+			    	        		sprHudTeclas.setPosition(espacio.x, espacio.y);
+			    	        		sprHudTeclas.setColor(c);
+		        				sprHudTeclas.setAlpha(trans * .65f);
+			    	        		sprHudTeclas.setScale(TAM_TECLA + tamPresionado);
+			    	        		sprHudTeclas.draw(dibujadoPantalla);
+		        			}
+	        			}
+	        		}
+	        		
 	        		espacio.x += 230 * TAM_TECLA;
 	        	}
         }
@@ -167,7 +220,7 @@ public class DibujadoEdicion extends DibujadoGeneral {
         
         //Fondo tiempo nivelelel
         sprBarras.setScale(1f, 0.125f);
-        sprBarras.setPosition(Coord.RESOL_X - 33.75f, -230);
+        sprBarras.setPosition(Coord.RESOL_X - 28.75f, -230);
         sprBarras.setColor(Color.BLACK);
         sprBarras.draw(dibujadoPantalla);
         //Barra Tiempo nivel
@@ -189,7 +242,7 @@ public class DibujadoEdicion extends DibujadoGeneral {
         sprBarras.draw(dibujadoPantalla);
         //Barra vida ahora sí
         sprBarras.setColor(new Color(.2941f, .7843f, 1f, 1));
-        sprBarras.setScale(0.5f, 0.125f);
+        sprBarras.setScale(0.5f * (gestor.relacionBrinco()), 0.125f);
         sprBarras.draw(dibujadoPantalla);
         
         //Datos iniciales de Esquinita de vida
@@ -206,7 +259,7 @@ public class DibujadoEdicion extends DibujadoGeneral {
         //Esquinita barra vida Sin usar porque este es el editor
         sprBarras.setColor(new Color(.2941f, .7843f, 1f, 1));
         sprBarras.setScale(0.125f, 0.125f);
-        sprBarras.setPosition(335 + 640, Coord.RESOL_Y - 350);
+        sprBarras.setPosition(335 + 640 * (gestor.relacionBrinco()), Coord.RESOL_Y - 350);
         sprBarras.draw(dibujadoPantalla);
         
         //Fondo circular de combo
@@ -214,6 +267,55 @@ public class DibujadoEdicion extends DibujadoGeneral {
         sprFondoCombo.setColor(new Color(0.85f, 0.85f, 0.85f, 1f));
         sprFondoCombo.setRotation((frames / 4) % 360);
         sprFondoCombo.draw(dibujadoPantalla);
+        //Dibujar borde texto combo
+		texto.getData().scaleX = TAM_TXT.x;
+		texto.getData().scaleY = TAM_TXT.y;
+  		for (int k = 0; k < 4; k++) {
+  	        renderTexto.setText(
+  	    			texto, ""+ gestor.getTotalNotas(),
+  	    			new Color(1, 1, 1, 1f), 300,
+  	    			Align.center, true
+  	        	);
+  				texto.draw(
+  	    			dibujadoPantalla, renderTexto,
+  	    			(k / 2) * 10 * texto.getData().scaleX + 85 - 5 * texto.getData().scaleX,
+  	    			(k % 2) * 10 * texto.getData().scaleY + Coord.RESOL_Y - 210 + 75 * texto.getData().scaleY - 5 * texto.getData().scaleY
+  	    		);
+  		}
+  		renderTexto.setText(
+  			texto, ""+gestor.getTotalNotas(),
+  			new Color(0, 0, 0, 1f), 300,
+  			Align.center, true
+      	);
+		texto.draw(
+  			dibujadoPantalla, renderTexto,
+  			85, Coord.RESOL_Y - 210 + 75 * texto.getData().scaleY
+  		);
+		
+		//Texto pistas
+		texto.getData().scaleX = TAM_TXT.x * .3f;
+		texto.getData().scaleY = TAM_TXT.y * .3f;
+		for (int k = 0; k < 4; k++) {
+  	        renderTexto.setText(
+  	    			texto, "ESPACIO: Pausa\tFLECHAS: retroceder, avanzar, control de brinco\tESC: Salir y guardar\tBorrar: SHIFT + tecla",
+  	    			new Color(1, 1, 1, 1f), Coord.RESOL_X,
+  	    			Align.center, true
+  	        	);
+  				texto.draw(
+  	    			dibujadoPantalla, renderTexto,
+  	    			(k / 2) * 10 * texto.getData().scaleX - 5 * texto.getData().scaleX,
+  	    			(k % 2) * 10 * texto.getData().scaleY + 50  - 5 * texto.getData().scaleY
+  	    		);
+  		}
+  		renderTexto.setText(
+  			texto, "ESPACIO: Pausa\tFLECHAS: retroceder, avanzar, control de brinco\tESC: Salir y guardar\tBorrar: SHIFT + tecla",
+  			new Color(0, 0, 0, 1f), Coord.RESOL_X,
+  			Align.center, true
+      	);
+		texto.draw(
+  			dibujadoPantalla, renderTexto,
+  			0, 50
+  		);
         
         dibujadoPantalla.end();
 	}
