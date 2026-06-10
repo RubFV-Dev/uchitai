@@ -85,7 +85,6 @@ public class UchitaiGame extends ApplicationAdapter {
     		canciones = new CancionesCargadas();
     		Gdx.input.setInputProcessor(input);
     		DibujadoGeneral.setMouse(mouse);
-    		Gdx.graphics.setWindowedMode(1280, 720);
 
         pantallaAct = PANTALLA.TITULO;
         orgPantallaAct = PANTALLA.TITULO;

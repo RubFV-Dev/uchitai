@@ -246,8 +246,8 @@ public class CancionesCargadas {
         }
 
         FileHandle newDir = dirCanciones.child(newName);
-        if (newDir.isDirectory() || !song.exists() || !png.exists() || !song.extension().equals(".mp3") ||
-        		!png.extension().equals(".png") || !png.extension().equals(".jpg") || !png.extension().equals(".jpeg")){
+        if (newDir.isDirectory() || !song.exists() || !png.exists()){
+        		System.out.print(false);
             return false;
         }
         newDir.mkdirs();

@@ -282,6 +282,11 @@ public class DibujadoSeleccion extends DibujadoGeneral {
             }
         }
 
+        if (txtPortadas.length != canciones.size()) {
+	    		txtPortadas = new Texture[canciones.size()];
+	    		sprPortadas = new Sprite[canciones.size()];
+        }
+
 		for (int i = 0, j = canciones.getIndiceCancion() - MAX_PORTADAS / 2; i < MAX_PORTADAS; i++, j++) {
 			if (j >= 0 && j < canciones.size() && txtPortadas[j] == null) {
 				if (j != canciones.size() - 1) {
@@ -1116,7 +1121,7 @@ public class DibujadoSeleccion extends DibujadoGeneral {
     @Override
     public boolean transCompletada() {
     		trans.animar();
-    		if (!trans.esEntrada() && trans.relacionAnimEspera(120, 0) > 0) {
+    		if (canciones != null && !trans.esEntrada() && trans.relacionAnimEspera(120, 0) > 0) {
     			canciones.getCancionActual().setVolume(1f - trans.relacionAnimEspera(120, 0));
     		}
 		return trans.completado();
