@@ -1,0 +1,30 @@
+package io.github.rubfv.uchitai;
+
+public class Coord {
+	public static final int RESOL_X = 1920, RESOL_Y = 1080;
+	public static final float RATIO = 16f / 9f;
+	public float x, y;
+	
+	Coord() {
+		x = y = 0;
+	}
+	
+	Coord(float x, float y) {
+		this.x = x;
+		this.y = y;
+	}
+	
+	public boolean dentroDe(float xMin, float xMax, float yMin, float yMax) {
+		return (x >= xMin && x < xMax && y >= yMin && y < yMax);
+	}
+	
+	public void setCoord(float x, float y) {
+		this.x = x; this.y = y;
+	}
+	
+	public void multipleCociente(float cock) {
+		x *= cock;
+		y *= cock;
+	}
+}
+
